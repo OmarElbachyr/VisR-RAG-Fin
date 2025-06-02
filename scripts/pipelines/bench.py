@@ -24,6 +24,9 @@ import faiss
 import transformers
 import torch
 import torchvision
+from tqdm import tqdm
+from sklearn.preprocessing import normalize
+from scipy.sparse import csr_matri
 
 # Optional imports based on selected models
 try:
@@ -284,6 +287,38 @@ class VisDoMRAG:
                 raise ImportError("Required libraries for FAISS not found. Install with `pip install faiss-cpu`.")
             else:
                 raise ValueError(f"Unsupported text retriever: {self.text_retriever}")
+            
+
+        elif self.text_retriever == "splade":
+            try:
+                from transformers import AutoTokenizer, AutoModelForMaskedLM
+                import torch
+                import torch.nn.functional as F
+                from scipy.sparse import csr_matrix
+
+                logger.info("Loading SPLADE model for sparse retrieval")
+                self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
+                self.text_model_name = "naver/splade-v3"
+                self.tokenizer = AutoTokenizer.from_pretrained(self.text_model_name)
+                self.splade_model = AutoModelForMaskedLM.from_pretrained(self.text_model_name).to(self.device).eval()
+
+                def splade_encode(texts):
+                    """Sparse encoding for SPLADE."""
+                    inputs = self.tokenizer(texts, return_tensors='pt', padding=True, truncation=True).to(self.device)
+                    with torch.no_grad():
+                        output = self.splade_model(**inputs).logits
+                        # LogReLU activation (SPLADE uses log(1 + ReLU(x)))
+                        sparse_rep = torch.log1p(F.relu(output))
+                        # max over tokens
+                        sparse_rep = torch.max(sparse_rep, dim=1).values
+                    return sparse_rep.cpu()
+
+                self.splade_encode = splade_encode  # Save function for later use
+
+            except ImportError:
+                raise ImportError("Transformers and torch required. Install with `pip install transformers torch`.")
+
 
     def extract_text_from_pdf(self, pdf_path):
         """
@@ -673,6 +708,51 @@ class VisDoMRAG:
                             })
                     except Exception as e:
                         logger.error(f"Error processing query {q_id} with BM25: {str(e)}")
+                        traceback.print_exc()
+
+            elif self.text_retriever == "splade":
+
+                logger.info("Generating SPLADE sparse embeddings for chunks")
+
+                # Step 1: Encode all document chunks sparsely
+                sparse_vectors = []
+                vocab_size = self.splade_model.config.vocab_size
+
+                for chunk in tqdm(all_chunks, desc="Encoding chunks with SPLADE"):
+                    vec = self.splade_encode([chunk])[0]  # shape: [vocab_size]
+                    sparse_vectors.append(vec)
+
+                # Convert to sparse matrix (scipy)
+                sparse_matrix = csr_matrix(torch.stack(sparse_vectors).numpy())  # shape: [num_chunks, vocab_size]
+                sparse_matrix = normalize(sparse_matrix, norm='l2', axis=1)  # optional, helps with scoring
+
+                # Step 2: Score each question
+                results = []
+                for _, row in tqdm(self.df.iterrows(), desc="Processing queries with SPLADE"):
+                    q_id = row['q_id']
+                    question = row['question']
+                    try:
+                        q_vec = self.splade_encode([question])[0].numpy().reshape(1, -1)
+                        q_vec = normalize(q_vec, norm='l2', axis=1)  # optional
+
+                        # Sparse dot product similarity
+                        scores = sparse_matrix.dot(q_vec.T).toarray().flatten()
+
+                        top_indices = np.argsort(scores)[::-1][:self.top_k*2]
+
+                        for rank, idx in enumerate(top_indices):
+                            chunk_info = chunk_to_doc_mapping[idx]
+                            results.append({
+                                'q_id': q_id,
+                                'question': question,
+                                'chunk': all_chunks[idx],
+                                'chunk_pdf_name': chunk_info['chunk_pdf_name'],
+                                'pdf_page_number': chunk_info['pdf_page_number'],
+                                'rank': rank + 1,
+                                'score': float(scores[idx])
+                            })
+                    except Exception as e:
+                        logger.error(f"Error processing query {q_id} with SPLADE: {str(e)}")
                         traceback.print_exc()
                 
             elif self.text_retriever in ["minilm", "mpnet", "bge"]:
