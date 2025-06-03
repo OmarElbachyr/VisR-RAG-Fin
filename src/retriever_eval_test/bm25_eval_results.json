@@ -1,0 +1,626 @@
+[
+  {
+    "question": "What is the main focus of the BNP Paribas document from October 2024?",
+    "gold_filename": "10a10a5c1aaf4f4bc97ac15548701359_page_1.png",
+    "rank": 6,
+    "hit@1": 0,
+    "hit@5": 0,
+    "hit@10": 1
+  },
+  {
+    "question": "What type of meeting environment is depicted in the image related to the BNP Paribas report?",
+    "gold_filename": "10a10a5c1aaf4f4bc97ac15548701359_page_1.png",
+    "rank": 25,
+    "hit@1": 0,
+    "hit@5": 0,
+    "hit@10": 0
+  },
+  {
+    "question": "Which corporate aspect is highlighted in the BNP Paribas document from October 2024?",
+    "gold_filename": "10a10a5c1aaf4f4bc97ac15548701359_page_1.png",
+    "rank": 5,
+    "hit@1": 0,
+    "hit@5": 0,
+    "hit@10": 1
+  },
+  {
+    "question": "What topics are considered critical for both BNP Paribas employees and external stakeholders?",
+    "gold_filename": "10a10a5c1aaf4f4bc97ac15548701359_page_7.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Which topics are regarded as major by BNP Paribas employees but are only important to external stakeholders?",
+    "gold_filename": "10a10a5c1aaf4f4bc97ac15548701359_page_7.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Identify topics that hold importance for external stakeholders but less so for BNP Paribas employees.",
+    "gold_filename": "10a10a5c1aaf4f4bc97ac15548701359_page_7.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What are the new indicators introduced by BNP Paribas for analyzing the environmental performance of microfinance institutions?",
+    "gold_filename": "8b85b4aece2ed0404ff63cfb31f1e9ed_page_10.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What are the main environmental objectives for microfinance institutions according to the indicators developed?",
+    "gold_filename": "8b85b4aece2ed0404ff63cfb31f1e9ed_page_10.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How do microfinance institutions assess their environmental risk, and what percentage is considered to have low environmental risk?",
+    "gold_filename": "8b85b4aece2ed0404ff63cfb31f1e9ed_page_10.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Who could benefit from the bank's support around the world?",
+    "gold_filename": "8b85b4aece2ed0404ff63cfb31f1e9ed_page_1.png",
+    "rank": 9,
+    "hit@1": 0,
+    "hit@5": 0,
+    "hit@10": 1
+  },
+  {
+    "question": "What type of data is represented in the visual element?",
+    "gold_filename": "8b85b4aece2ed0404ff63cfb31f1e9ed_page_1.png",
+    "rank": 24,
+    "hit@1": 0,
+    "hit@5": 0,
+    "hit@10": 0
+  },
+  {
+    "question": "Which organization is associated with the microfinance social performance report?",
+    "gold_filename": "8b85b4aece2ed0404ff63cfb31f1e9ed_page_1.png",
+    "rank": 17,
+    "hit@1": 0,
+    "hit@5": 0,
+    "hit@10": 0
+  },
+  {
+    "question": "What percentage of beneficiaries of BNP Paribas microloans in the Americas are women?",
+    "gold_filename": "06055cefc5c8c6c31f0347d419937cd3_page_9.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How many jobs were created or maintained by beneficiaries of BNP Paribas microloans in 2023?",
+    "gold_filename": "06055cefc5c8c6c31f0347d419937cd3_page_9.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the average loan amount granted through BNP Paribas in Brazil?",
+    "gold_filename": "06055cefc5c8c6c31f0347d419937cd3_page_9.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What practices are assessed in green loan financing by microfinance institutions?",
+    "gold_filename": "06055cefc5c8c6c31f0347d419937cd3_page_4.png",
+    "rank": 1,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What are the environmental objectives of the microfinance institution?",
+    "gold_filename": "06055cefc5c8c6c31f0347d419937cd3_page_4.png",
+    "rank": 1,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How do microfinance institutions classify their portfolio related to environmental impact?",
+    "gold_filename": "06055cefc5c8c6c31f0347d419937cd3_page_4.png",
+    "rank": 4,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What recognitions did BNP Paribas receive for its sustainability and CSR efforts in 2023?",
+    "gold_filename": "19d8a33f3e9e6a93b9e7c9f65854d330_page_7.png",
+    "rank": 1,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How does BNP Paribas incorporate economic and social responsibility in its CSR strategy?",
+    "gold_filename": "19d8a33f3e9e6a93b9e7c9f65854d330_page_7.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What does the governance of BNP Paribas' CSR strategy emphasize?",
+    "gold_filename": "19d8a33f3e9e6a93b9e7c9f65854d330_page_7.png",
+    "rank": 1,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What are the main components of the Group's approach to integrating climate risks into their risk management framework?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_15.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How does the Group plan to enhance their climate risk analysis in the future?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_15.png",
+    "rank": 2,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What strategic objectives does the Group aim to achieve with its climate risk initiatives?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_15.png",
+    "rank": 4,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the projected change in BNP Paribas' emission intensity from 2022 to 2030 for the Commercial Real Estate sector?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_29.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What factors might affect BNP Paribas' ability to meet its 2030 emissions target for the Commercial Real Estate sector?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_29.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What are the main levers for decarbonisation in existing buildings according to the document?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_29.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How does the impact of climate scenarios on 'Portfolio secured by real estate' in France compare to Belgium and Italy?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_18.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the trend in 'Other Manufacturing' impact across the listed regions under a delayed transition scenario?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_18.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "In the 'Delayed transition' scenario, which region has the highest impact from 'Power generation and supply'?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_18.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What initiative did BNP Paribas take to support low-carbon mobility regarding electric vehicles?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_11.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How does Heidelberg Materials plan to achieve sustainability targets by 2050?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_11.png",
+    "rank": 1,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What are the main objectives of the EUR 400 million sustainability-linked loan BNP Paribas Fortis coordinated for Renewi?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_11.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the projected credit exposure reduction for upstream oil and gas by the year 2025 according to the table?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_23.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What was the baseline financed emissions in MtCO\u2082e for September 2022?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_23.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What reduction target does the group set for the 2030 financed emissions in MtCO\u2082e?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_23.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Which sector contributes the most to climate change according to BNP Paribas' report at the end of December 2023?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_14.png",
+    "rank": 1,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Which sector holds the highest potential sensitivity to physical climate risk at the end of December 2023?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_14.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How does BNP Paribas identify companies with significant exposure to climate change?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_14.png",
+    "rank": 2,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the reduction target set for oil and gas gross exposure credit risk by 2030, and how does it compare to the 2023 baseline?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_32.png",
+    "rank": 3,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Which sector has the highest benchmark emission intensity target for 2025, and what is the target value?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_32.png",
+    "rank": 4,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How does the emission intensity for the steel sector change from the 2022 benchmark to the 2030 target?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_32.png",
+    "rank": 2,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What factors influence the strategy used by BNP Paribas to set compensation rates related to climate responsibility?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_9.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How is BNP Paribas ensuring a significant transition to low-carbon operations across all client segments?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_9.png",
+    "rank": 2,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What kinds of expertise is BNP Paribas developing among its employees to support its climate agenda?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_9.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How has BNP Paribas's approach to financing fossil fuels changed by 2023 compared to previous years?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_5.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the primary focus of BNP Paribas's financing strategy by 2023?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_5.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What initiatives has BNP Paribas implemented to reduce exposure to high environmental risk sectors?",
+    "gold_filename": "08c8fb2e93522ea8b56011935a084cbc_page_5.png",
+    "rank": 1,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How many project finance transactions in the Americas were categorized in total for 2023?",
+    "gold_filename": "68b1faa8e7ee854450f53622cc411627_page_6.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Which sector had the highest number of Category A transactions?",
+    "gold_filename": "68b1faa8e7ee854450f53622cc411627_page_6.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Did most project finance transactions undergo an independent review?",
+    "gold_filename": "68b1faa8e7ee854450f53622cc411627_page_6.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the main focus of the Equator Principles according to the recent guidelines?",
+    "gold_filename": "68b1faa8e7ee854450f53622cc411627_page_2.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How many countries have adopted the Equator Principles as of May 2023?",
+    "gold_filename": "68b1faa8e7ee854450f53622cc411627_page_2.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What specific aspect of project sensitivity did the fourth version of the Equator Principles address?",
+    "gold_filename": "68b1faa8e7ee854450f53622cc411627_page_2.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What are some sectors or regions that show a change in investment for achieving net-zero emissions by 2030?",
+    "gold_filename": "61bf2acda6c8fb5d0db7e39dba2c7bdb_page_2.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What challenges are hindering the adoption of effective energy efficiency measures as mentioned in the page?",
+    "gold_filename": "61bf2acda6c8fb5d0db7e39dba2c7bdb_page_2.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Why is the potential for energy investments in Africa and the Middle East still largely untapped?",
+    "gold_filename": "61bf2acda6c8fb5d0db7e39dba2c7bdb_page_2.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What are the benefits of using biofuels in transportation?",
+    "gold_filename": "61bf2acda6c8fb5d0db7e39dba2c7bdb_page_4.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How does green hydrogen improve energy efficiency over traditional fuels?",
+    "gold_filename": "61bf2acda6c8fb5d0db7e39dba2c7bdb_page_4.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What advantages do small modular reactors (SMRs) offer in energy resource management?",
+    "gold_filename": "61bf2acda6c8fb5d0db7e39dba2c7bdb_page_4.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How much more water does a 100-word email generated by a chatbot like GPT-4 require compared to one written without AI?",
+    "gold_filename": "15e70eaecfea539bde01d339cf60c1c6_page_2.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the estimated domestic water consumption per person per day noted on the page, and how does it relate to virtual water use?",
+    "gold_filename": "15e70eaecfea539bde01d339cf60c1c6_page_2.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What are some identified reasons that make water vital according to the page?",
+    "gold_filename": "15e70eaecfea539bde01d339cf60c1c6_page_2.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What year did the EU Parliament and Council adopt a directive focusing on water protection, and what does the directive aim to protect?",
+    "gold_filename": "15e70eaecfea539bde01d339cf60c1c6_page_3.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How does the Aqueduct platform help businesses in managing water concerns?",
+    "gold_filename": "15e70eaecfea539bde01d339cf60c1c6_page_3.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What major regulatory achievement related to water protection took place in 2013 according to the evolution timeline?",
+    "gold_filename": "15e70eaecfea539bde01d339cf60c1c6_page_3.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Who is responsible for reimbursing investors based on performance in the impact bond model?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_12.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "Which step in the impact bond model focuses on evaluating the programme and adjusting payments?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_12.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the primary benefit for investors participating in impact bonds?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_12.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How does BNP Paribas support environmental efforts related to biodiversity by 2023?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_9.png",
+    "rank": 2,
+    "hit@1": 0,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What role does Ecov play in the transportation sector?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_9.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the impact of Le Pav\u00e9's operations in 2023?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_9.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What is the impact of the IB supporting former inmates with severe psychiatric disorders on homelessness?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_15.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How does the IB targeting eco-responsible practices impact greenhouse gas emissions?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_15.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What support does the IB provide for elderly people in Limburg, Netherlands?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_15.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "What financial contribution supports impact entrepreneurship according to the document?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_18.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How many impact companies have benefited from Act For Impact's support?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_18.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  },
+  {
+    "question": "How many million jobs have been created by microfinance beneficiaries as indicated?",
+    "gold_filename": "914721af97f97f372c8a5cfe1deb996f_page_18.png",
+    "rank": 0,
+    "hit@1": 1,
+    "hit@5": 1,
+    "hit@10": 1
+  }
+]
