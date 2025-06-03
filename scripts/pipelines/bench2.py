@@ -357,3 +357,47 @@ print(spladeranked)
 #colbert
 colbertranked = colbert_rank_documents(query, documents)
 print(colbertranked)
+
+
+
+## Compute performance metrics
+#print("\nComputing performance metrics...")
+#
+## 1. Exact Matching Accuracy (with preprocessing)
+#exact_matches = [preprocess_answer(gen) == preprocess_answer(gt) 
+#                 for gen, gt in zip(generated_answers, ground_truth_answers)]
+#accuracy = sum(exact_matches) / len(exact_matches) if exact_matches else 0.0
+#
+## 2. BERT Score (F1) on raw answers
+#P, R, F1 = bert_score(generated_answers, ground_truth_answers, lang="en", verbose=True)
+#bert_f1 = F1.mean().item()
+#
+## 3. ROUGE-L Score (F1) on raw answers
+#scorer = rouge_scorer.RougeScorer(['rougeL'], use_stemmer=True)
+#rouge_l_scores = [scorer.score(gt, gen)['rougeL'].fmeasure 
+#                  for gt, gen in zip(ground_truth_answers, generated_answers)]
+#rouge_l = sum(rouge_l_scores) / len(rouge_l_scores) if rouge_l_scores else 0.0
+#
+## 4. F1 Score based on word overlap (on raw answers)
+#def compute_f1(gen, gt):
+#    """Compute F1 score based on word overlap between generated and ground truth answers."""
+#    gen_tokens = set(gen.lower().split())
+#    gt_tokens = set(gt.lower().split())
+#    intersection = gen_tokens.intersection(gt_tokens)
+#    if not gen_tokens or not gt_tokens:
+#        return 0.0
+#    precision = len(intersection) / len(gen_tokens)
+#    recall = len(intersection) / len(gt_tokens)
+#    if precision + recall == 0:
+#        return 0.0
+#    return 2 * (precision * recall) / (precision + recall)
+#
+#f1_scores = [compute_f1(gen, gt) for gen, gt in zip(generated_answers, ground_truth_answers)]
+#f1 = sum(f1_scores) / len(f1_scores) if f1_scores else 0.0
+#
+## Print the results
+#print("\nBaseline Performance Metrics for BLIP-VQA-base (25% Sample):")
+#print(f"Exact Matching Accuracy: {accuracy:.4f}")
+#print(f"BERT Score F1: {bert_f1:.4f}")
+#print(f"ROUGE-L F1: {rouge_l:.4f}")
+#print(f"Word Overlap F1: {f1:.4f}")
