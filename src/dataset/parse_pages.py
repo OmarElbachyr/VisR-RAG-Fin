@@ -33,7 +33,7 @@ from unstructured.partition.image import partition_image
 # ---------------------------------------------------------------------------
 JSON_PATH = Path("data/label-studio-data.json")  # source annotations
 IMG_DIR = Path("data/pages")                     # folder with PNG pages
-CSV_PATH = Path("src/dataset/qa_pairs.csv")     # incremental CSV store
+CSV_PATH = Path("src/dataset/parsed_pages.csv")     # incremental CSV store
 STRATEGY = "hi_res"                            # partition_image strategy
 LIMIT = 3                                      # set e.g. 3 for a quick test
 # ---------------------------------------------------------------------------
