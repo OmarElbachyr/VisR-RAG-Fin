@@ -4,12 +4,12 @@ from pytesseract import image_to_string
 from PIL import Image
 from pytesseract import pytesseract
 
-pytesseract.tesseract_cmd = "C:/Users/laura.bernardy/AppData/Local/Programs/Tesseract-OCR/tesseract.exe"
-def extract_text_from_images(folder_path, output_json="all_chunks.json"):
+# pytesseract.tesseract_cmd = "C:/Users/laura.bernardy/AppData/Local/Programs/Tesseract-OCR/tesseract.exe"
+def extract_text_from_images(folder_path, output_json):
     all_chunks = []
     image_files = sorted([f for f in os.listdir(folder_path) if f.lower().endswith(".png")])
 
-    for idx, filename in enumerate(image_files):
+    for idx, filename in enumerate(image_files[:3]):
         file_path = os.path.join(folder_path, filename)
         print(f"Processing: {filename}")
         
@@ -31,5 +31,6 @@ def extract_text_from_images(folder_path, output_json="all_chunks.json"):
 
 # Example usage
 if __name__ == "__main__":
-    folder_path = "P:/vqa-benchmark/data/sampled_pages/single_page_images/BNP" 
-    extract_text_from_images(folder_path)
+    folder_path = "data/pages" 
+    output_json = "data/parsed_pages/parsed_pages.json"
+    extract_text_from_images(folder_path, output_json)
