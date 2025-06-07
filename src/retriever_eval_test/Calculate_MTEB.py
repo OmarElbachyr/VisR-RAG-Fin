@@ -1,198 +1,184 @@
 import pandas as pd
-from rank_bm25 import BM25Okapi
-import pytrec_eval
-from collections import defaultdict
 import numpy as np
-#from vidore import ColPali, ColPaliProcessor
 import torch
+from rank_bm25 import BM25Okapi
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, AutoModel
+import pytrec_eval
+from collections import defaultdict
+import nltk
+import torch.nn.functional as F
+from transformers import AutoTokenizer, AutoModelForMaskedLM
 
+# === 1. Load and deduplicate =================================================
+df = (
+    pd.read_csv("chunked_pages.csv")
+      .drop_duplicates(subset=["chunk_id", "text_description"])
+)
 
-# === Load dataset ===
-df = pd.read_csv("chunked_pages.csv")
-df = df.drop_duplicates(subset=["query", "chunk_id", "text_description"])
-
-query_text = df["query"].iloc[0]
-query_id = "q1"
-k_values = [1, 3, 5, 10]
-metrics = {'ndcg_cut', 'map_cut', 'recall', 'P'}
-
-# Prepare chunk-level info
+# === 2. Build chunk corpus ===================================================
 chunk_ids = df["chunk_id"].tolist()
 chunk_texts = df["text_description"].astype(str).tolist()
-chunk_to_page = dict(zip(df["chunk_id"], df["page_number"]))
+chunk_to_page = dict(zip(chunk_ids, df["page_number"]))
+doc_tokens = [doc.split() for doc in chunk_texts]
 
-# Qrels at chunk-level: all chunks from relevant pages are relevant
-relevant_pages = set(df["page_number"].unique())
-qrels_chunk = {
-    query_id: {cid: 1 for cid, page in chunk_to_page.items() if page in relevant_pages}
-}
-# Qrels at page-level
-qrels_page = {
-    query_id: {str(p): 1 for p in relevant_pages}
-}
+# === 3. Prepare queries and qrels ============================================
+queries = {}
+qrels_chunk = {}
+qrels_page = {}
 
+for idx, (query_text, group) in enumerate(df.groupby("query"), start=1):
+    qid = f"q{idx}"
+    queries[qid] = query_text
+    relevant_pages = set(group["page_number"])
+    relevant_chunks = group["chunk_id"]
+    qrels_chunk[qid] = {cid: 1 for cid in relevant_chunks}
+    qrels_page[qid] = {str(p): 1 for p in relevant_pages}
 
-def evaluate(run, qrels, label):
-    evaluator = pytrec_eval.RelevanceEvaluator(qrels, metrics)
-    results = evaluator.evaluate(run)
+# === 4. Scoring functions =====================================================
+def score_bm25(queries, tokenized_docs):
+    bm25 = BM25Okapi(tokenized_docs)
+    run_chunk = {}
+    for qid, qtext in queries.items():
+        scores = bm25.get_scores(qtext.split())
+        run_chunk[qid] = {cid: float(score) for cid, score in zip(chunk_ids, scores)}
+    return run_chunk
 
-    print(f"\n=== {label} Evaluation ===")
-    for k in k_values:
-        ndcg = np.mean([results[qid].get(f"ndcg_cut_{k}", 0.0) for qid in results])
-        ap = np.mean([results[qid].get(f"map_cut_{k}", 0.0) for qid in results])
-        recall = np.mean([results[qid].get(f"recall_{k}", 0.0) for qid in results])
-        precision = np.mean([results[qid].get(f"P_{k}", 0.0) for qid in results])
-        print(f"NDCG@{k}: {ndcg:.4f} | MAP@{k}: {ap:.4f} | Recall@{k}: {recall:.4f} | P@{k}: {precision:.4f}")
-    print("-" * 50)
-
-
-def get_bm25_scores(query, texts):
-    tokenized_corpus = [doc.split() for doc in texts]
-    bm25 = BM25Okapi(tokenized_corpus)
-    tokenized_query = query.split()
-    return bm25.get_scores(tokenized_query)
-
-
-#def get_colpali_scores(query, texts):
-#    model = ColPali.from_pretrained(
-#        "vidore/colpali-v1.2",
-#        torch_dtype=torch.bfloat16,
-#        device_map="cuda"
-#    ).eval()
-#    processor = ColPaliProcessor.from_pretrained("vidore/colpali-v1.2")
-#
-#    q_input = processor([query], return_tensors="pt").to("cuda")
-#    with torch.no_grad():
-#        q_feat = model.get_text_features(**q_input)
-#
-#    scores = []
-#    for text in texts:
-#        d_input = processor([text], return_tensors="pt").to("cuda")
-#        with torch.no_grad():
-#            d_feat = model.get_text_features(**d_input)
-#        score = torch.nn.functional.cosine_similarity(q_feat, d_feat).item()
-#        scores.append(score)
-#    return scores
-
-
-def get_dense_scores(query, documents, model_name="sentence-transformers/all-MiniLM-L6-v2", top_k=None):
-    """
-    Initialize dense retriever with SentenceTransformer, encode documents,
-    then rank documents based on similarity to query.
-
-    Args:
-        query (str): The query string.
-        documents (list of str): List of document strings.
-        model_name (str): SentenceTransformer model name.
-        top_k (int, optional): Number of top results to return. Return all if None.
-
-    Returns:
-        list of (int, float): List of tuples (doc_index, similarity_score) sorted by score desc.
-    """
+def score_dense(queries, docs, model_name="sentence-transformers/all-MiniLM-L6-v2"):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = SentenceTransformer(model_name, device=device)
+    doc_embs = model.encode(docs, convert_to_numpy=True, normalize_embeddings=True)
+    run_chunk = {}
+    for qid, qtext in queries.items():
+        query_emb = model.encode([qtext], convert_to_numpy=True, normalize_embeddings=True)
+        scores = cosine_similarity(query_emb, doc_embs)[0]
+        run_chunk[qid] = {cid: float(score) for cid, score in zip(chunk_ids, scores)}
+    return run_chunk
 
-    # Encode documents
-    embeddings = model.encode(documents, convert_to_numpy=True, show_progress_bar=False, normalize_embeddings=True)
+def score_hybrid_all(queries, documents, dense_model_name="sentence-transformers/all-MiniLM-L6-v2", bm25_weight=0.5, dense_weight=0.5):
+    nltk.download("punkt", quiet=True)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    # Encode query
-    query_vec = model.encode([query], convert_to_numpy=True, normalize_embeddings=True)
+    tokenized_documents = [nltk.word_tokenize(doc.lower()) for doc in documents]
+    bm25 = BM25Okapi(tokenized_documents)
 
-    # Compute cosine similarity scores
-    scores = cosine_similarity(query_vec, embeddings)[0]
-    return scores
+    model = SentenceTransformer(dense_model_name, device=device)
+    doc_embeddings = model.encode(documents, convert_to_numpy=True, normalize_embeddings=True)
+
+    run_chunk = {}
+    for qid, qtext in queries.items():
+        tokenized_query = nltk.word_tokenize(qtext.lower())
+        bm25_scores = bm25.get_scores(tokenized_query)
+
+        query_embedding = model.encode([qtext], convert_to_numpy=True, normalize_embeddings=True)
+        dense_scores = cosine_similarity(query_embedding, doc_embeddings)[0]
+
+        bm25_scores_norm = (bm25_scores - bm25_scores.min()) / (bm25_scores.max() - bm25_scores.min() + 1e-8)
+        dense_scores_norm = (dense_scores + 1) / 2
+
+        hybrid_scores = bm25_weight * bm25_scores_norm + dense_weight * dense_scores_norm
+        run_chunk[qid] = {cid: float(score) for cid, score in zip(chunk_ids, hybrid_scores)}
+
+    return run_chunk
 
 
-def get_colbert_scores(query, documents, model_name="bert-base-uncased", max_length=128, device=None):
-    """
-    Loads ColBERT-style BERT encoder and tokenizer, encodes documents and query,
-    ranks documents by ColBERT max-similarity scoring.
+def score_splade_all(queries, documents, model_name="naver/splade-cocondenser-ensembledistil"):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForMaskedLM.from_pretrained(model_name).to(device).eval()
 
-    Args:
-        query (str): Query string.
-        documents (list of str): List of documents.
-        model_name (str): HuggingFace transformer model to use.
-        max_length (int): Max tokens for documents/query.
-        device (str or None): 'cuda' or 'cpu'. Auto-detect if None.
+    def encode_texts(texts):
+        inputs = tokenizer(texts, return_tensors='pt', padding=True, truncation=True).to(device)
+        with torch.no_grad():
+            logits = model(**inputs).logits
+            sparse_rep = torch.log1p(F.relu(logits))
+            sparse_rep = torch.max(sparse_rep, dim=1).values
+        return sparse_rep.cpu()
 
-    Returns:
-        list of (int, float): Document indices and similarity scores sorted descending.
-    """
-    device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+    doc_embs = encode_texts(documents)
+    run_chunk = {}
+    for qid, qtext in queries.items():
+        query_emb = encode_texts([qtext])[0]
+        scores = torch.matmul(doc_embs, query_emb).numpy()
+        run_chunk[qid] = {cid: float(score) for cid, score in zip(chunk_ids, scores)}
+    return run_chunk
 
-    # Load tokenizer and model
+
+def score_colbert(queries, docs, model_name="bert-base-uncased", max_length=128):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModel.from_pretrained(model_name).to(device).eval()
 
     def encode(texts):
-        # Tokenize and encode to get token embeddings: (batch_size, seq_len, hidden_dim)
         inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=max_length).to(device)
         with torch.no_grad():
             outputs = model(**inputs)
-            # Use last hidden state as token embeddings
-            token_embeddings = outputs.last_hidden_state  # (B, L, H)
-            # Normalize embeddings for cosine similarity
-            token_embeddings = torch.nn.functional.normalize(token_embeddings, p=2, dim=-1)
-        return token_embeddings
+            token_embs = outputs.last_hidden_state
+            return torch.nn.functional.normalize(token_embs, p=2, dim=-1)
 
-    # Encode query and docs
-    query_emb = encode([query])[0]           # (query_len, hidden_dim)
-    doc_embs = encode(documents)              # (num_docs, doc_len, hidden_dim)
+    doc_embs = encode(docs)  # (N, L, H)
+    run_chunk = {}
 
-    scores = []
-    # For each document, compute maxsim:
-    # For each query token, find max cosine sim with any doc token, then sum over query tokens
-    for i in range(len(documents)):
-        doc_emb = doc_embs[i]                 # (doc_len, hidden_dim)
-        # Cosine similarity matrix: (query_len, doc_len)
-        sim_matrix = torch.matmul(query_emb, doc_emb.T)
-        # Max over doc tokens per query token
-        max_sim_per_query_token, _ = sim_matrix.max(dim=1)
-        score = max_sim_per_query_token.sum().item()
-        scores.append(score)
-    return scores
+    for qid, qtext in queries.items():
+        q_emb = encode([qtext])[0]  # (Lq, H)
+        scores = []
+        for d in doc_embs:
+            sim = torch.matmul(q_emb, d.T)
+            max_sim, _ = sim.max(dim=1)
+            scores.append(max_sim.sum().item())
+        run_chunk[qid] = {cid: float(score) for cid, score in zip(chunk_ids, scores)}
+    return run_chunk
 
-def evaluate_chunk_level(model_name, scores):
-    run = {query_id: {cid: float(score) for cid, score in zip(chunk_ids, scores)}}
-    evaluate(run, qrels_chunk, f"{model_name} (Chunk-Level)")
+# === 5. Utility: chunk → page aggregation ====================================
+def aggregate_chunk_scores(run_chunk, agg="max"):
+    run_page = {}
+    for qid, scores in run_chunk.items():
+        page_scores = defaultdict(list)
+        for cid, score in scores.items():
+            page = chunk_to_page.get(cid)
+            if page is not None:
+                page_scores[page].append(score)
 
+        if agg == "max":
+            run_page[qid] = {str(p): float(np.max(v)) for p, v in page_scores.items()}
+        elif agg == "mean":
+            run_page[qid] = {str(p): float(np.mean(v)) for p, v in page_scores.items()}
+        elif agg == "sum":
+            run_page[qid] = {str(p): float(np.sum(v)) for p, v in page_scores.items()}
+        else:
+            raise ValueError("Unsupported aggregation method.")
+    return run_page
 
-def evaluate_page_level(model_name, scores, agg="max"):
-    # Aggregate chunk scores to pages
-    page_scores = defaultdict(list)
-    for cid, score in zip(chunk_ids, scores):
-        page = chunk_to_page[cid]
-        page_scores[page].append(score)
+# === 6. Evaluation function ===================================================
+def evaluate(run, qrels, label):
+    evaluator = pytrec_eval.RelevanceEvaluator(qrels, {"ndcg_cut", "map_cut", "recall", "P"})
+    results = evaluator.evaluate(run)
+    print(f"\n=== {label} ===")
+    for k in [1, 3, 5, 10]:
+        ndcg = np.mean([res.get(f"ndcg_cut_{k}", 0.0) for res in results.values()])
+        m_ap = np.mean([res.get(f"map_cut_{k}", 0.0) for res in results.values()])
+        recall = np.mean([res.get(f"recall_{k}", 0.0) for res in results.values()])
+        prec = np.mean([res.get(f"P_{k}", 0.0) for res in results.values()])
+        print(f"K={k:<2}  NDCG:{ndcg:.4f}  MAP:{m_ap:.4f}  Recall:{recall:.4f}  Precision:{prec:.4f}")
 
-    if agg == "max":
-        agg_scores = {str(p): float(np.max(s)) for p, s in page_scores.items()}
-    elif agg == "mean":
-        agg_scores = {str(p): float(np.mean(s)) for p, s in page_scores.items()}
-    elif agg == "sum":
-        agg_scores = {str(p): float(np.sum(s)) for p, s in page_scores.items()}
-    else:
-        raise ValueError("Unknown aggregation method")
+# === 7. Run models and evaluate ===============================================
+bm25_chunk = score_bm25(queries, doc_tokens)
+dense_chunk = score_dense(queries, chunk_texts)
+colbert_chunk = score_colbert(queries, chunk_texts)
+hybrid_chunk = score_hybrid_all(queries, chunk_texts)
+splade_chunk = score_splade_all(queries, chunk_texts)
 
-    run = {query_id: agg_scores}
-    evaluate(run, qrels_page, f"{model_name} (Page-Level, {agg})")
+# Chunk-level eval
+evaluate(bm25_chunk, qrels_chunk, "BM25 (Chunk-Level)")
+evaluate(dense_chunk, qrels_chunk, "Dense (Chunk-Level)")
+evaluate(colbert_chunk, qrels_chunk, "ColBERT (Chunk-Level)")
+evaluate(hybrid_chunk, qrels_chunk, "Hybrid (Chunk-Level)")
+evaluate(splade_chunk, qrels_chunk, "SPLADE (Chunk-Level)")
 
-
-# === Run both models ===
-bm25_scores = get_bm25_scores(query_text, chunk_texts)
-dense_scores = get_dense_scores(query_text, chunk_texts)
-colbert_scores = get_colbert_scores(query_text,chunk_texts )
-#colpali_scores = get_colpali_scores(query_text, chunk_texts)
-
-# === Evaluate ===
-evaluate_chunk_level("BM25", bm25_scores)
-#evaluate_chunk_level("ColPali", colpali_scores)
-evaluate_chunk_level("Dense", dense_scores)
-evaluate_chunk_level("Colbert", colbert_scores)
-
-evaluate_page_level("BM25", bm25_scores, agg="max")
-#evaluate_page_level("ColPali", colpali_scores)
-evaluate_page_level("Dense", dense_scores, agg="max")
-evaluate_chunk_level("Colbert", colbert_scores)
+# Page-level eval
+evaluate(aggregate_chunk_scores(bm25_chunk), qrels_page, "BM25 (Page-Level)")
+evaluate(aggregate_chunk_scores(dense_chunk), qrels_page, "Dense (Page-Level)")
+evaluate(aggregate_chunk_scores(colbert_chunk), qrels_page, "ColBERT (Page-Level)")
+evaluate(aggregate_chunk_scores(hybrid_chunk),qrels_page,"Hybrid (Page-Level)")
+evaluate(aggregate_chunk_scores(splade_chunk),qrels_page,"SPLADE (Page-Level)")
