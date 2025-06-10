@@ -29,5 +29,4 @@ __pycache__/
 .env
 notebooks
 chunks_images
-src/test
 indexes/
