@@ -9,3 +9,6 @@ pillow
 matplotlib
 datasets
 unstructured[image]
+pytrec-eval==0.5
+faiss-cpu
+pylate

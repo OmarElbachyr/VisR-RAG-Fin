@@ -1,0 +1,4 @@
+[project]
+name = "vqa_ir_qa"
+version = "0.0.0"
+packages = ["src"]            # tells build backend where package lives
