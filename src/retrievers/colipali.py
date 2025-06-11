@@ -1,78 +1,55 @@
-from __future__ import annotations
-
-from pathlib import Path
-from typing import Dict, List, Literal
-from pylate import models, indexes, retrieve
+from typing import Dict, Literal
 import numpy as np
 
-from evaluation.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
+from retrievers.colbert_retriever import ColBERTRetriever
+from retrievers.splade_retriever import SpladeRetriever
+from evaluation.document_provider import DocumentProvider
 
 
-class ColBERTRetriever(BaseRetriever):
+class CoLiPLaIRetriever(BaseRetriever):
+    """
+    Hybrid retriever combining ColBERT and SPLADE via weighted interpolation.
+    """
+
     def __init__(
         self,
         provider: DocumentProvider,
-        model_name: str = "lightonai/GTE-ModernColBERT-v1",
-        index_folder: str | Path = "indexes/pylate-index",
-        index_name: str = "index",
-        override: bool = True,
-    ) -> None:
+        splade_weight: float = 0.5,
+        colbert_weight: float = 0.5,
+        **kwargs
+    ):
         super().__init__()
-        self.model = models.ColBERT(model_name_or_path=model_name)
-        self.index = indexes.Voyager(
-            index_folder=str(index_folder),
-            index_name=index_name,
-            override=override,
-        )
-        ids, texts = provider.get("text")
-        self.doc_ids: List[str] = ids
-        self.chunk_to_page = provider.chunk_to_page
-        embeddings = self.model.encode(
-            texts,
-            batch_size=32,
-            is_query=False,
-            show_progress_bar=True,
-        )
-        self.index.add_documents(
-            documents_ids=ids,
-            documents_embeddings=embeddings,
-        )
-        self.searcher = retrieve.ColBERT(index=self.index)
+        assert np.isclose(splade_weight + colbert_weight, 1.0), "Weights must sum to 1."
+        self.splade = SpladeRetriever(provider, **kwargs)
+        self.colbert = ColBERTRetriever(provider, **kwargs)
+        self.splade_weight = splade_weight
+        self.colbert_weight = colbert_weight
 
-    def _aggregate_scores(cls, vals: list[float], agg: Literal["max", "mean", "sum"]) -> float:
-        if agg == "max":
-            return float(max(vals))
-        elif agg == "sum":
-            return float(sum(vals))
-        elif agg == "mean":
-            return float(np.mean(vals))
-        else:
-            raise ValueError("Unsupported aggregation method.")
+    def search(
+        self,
+        queries: Dict[str, str],
+        k: int = -1,
+        agg: Literal["max", "mean", "sum"] = "max"
+    ) -> Dict[str, Dict[str, float]]:
 
-    def search(self, queries: Dict[str, str], k: int = -1, agg: Literal["max", "mean", "sum"] = "max") -> Dict[str, Dict[str, float]]:
-        qids = list(queries.keys())
-        qtexts = list(queries.values())
-        qembs = self.model.encode(
-            qtexts,
-            batch_size=32,
-            is_query=True,
-            show_progress_bar=True,
-        )
-        results = self.searcher.retrieve(
-            queries_embeddings=qembs,
-            k=k,  # k=-1 to score all documents
-        )
+        splade_scores = self.splade.search(queries, agg=agg)
+        colbert_scores = self.colbert.search(queries, k=k, agg=agg)
+
         run: Dict[str, Dict[str, float]] = {}
-        for qid, hits in zip(qids, results):
-            page_scores: Dict[str, List[float]] = {}
-            for hit in hits:
-                doc_id = hit["id"]
-                score = hit["score"]
-                pg = self.chunk_to_page.get(doc_id).split('.')[0] # remove .png extension
-                if pg is None:
-                    continue
-                page_scores.setdefault(str(pg), []).append(score)
-            run[qid] = {p: self._aggregate_scores(vals, agg) for p, vals in page_scores.items()}
+
+        for qid in queries:
+            combined_scores = {}
+            splade_docs = splade_scores.get(qid, {})
+            colbert_docs = colbert_scores.get(qid, {})
+            all_pages = set(splade_docs) | set(colbert_docs)
+
+            for page in all_pages:
+                s_score = splade_docs.get(page, 0.0)
+                c_score = colbert_docs.get(page, 0.0)
+                combined_score = self.splade_weight * s_score + self.colbert_weight * c_score
+                combined_scores[page] = combined_score
+
+            run[qid] = combined_scores
+
         return run
-    
