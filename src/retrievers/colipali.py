@@ -7,19 +7,20 @@ import numpy as np
 
 from evaluation.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
+from colpali_engine.models import ColPali, ColPaliProcessor
 
 
 class ColipaliRetriever(BaseRetriever):
     def __init__(
         self,
         provider: DocumentProvider,
-        model_name: str = "vidore/colpali",
+        model_name: str = "vidore/colpali-v1.2",
         index_folder: str | Path = "indexes/pylate-index",
         index_name: str = "index",
         override: bool = True,
     ) -> None:
         super().__init__()
-        self.model = models.ColBERT(model_name_or_path=model_name)
+        self.model = ColPali.from_pretrained("vidore/colpali-v1.2")
         self.index = indexes.Voyager(
             index_folder=str(index_folder),
             index_name=index_name,
