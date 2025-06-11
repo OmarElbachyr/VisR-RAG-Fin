@@ -35,6 +35,10 @@ class DocumentProvider:
     @property
     def tokens(self) -> List[List[str]]:
         return self._token_view
+    
+    @property
+    def texts(self) -> List[str]:
+        return self._texts
 
     @property
     def chunk_to_page(self) -> Dict[str, int]:

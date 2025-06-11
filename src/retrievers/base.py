@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Dict
+import sys 
+import os 
+sys.path.append(os.path.abspath("C:/Users/laura.bernardy/OneDrive - University of Luxembourg/Documents/GitHub/vqa-ir-qa/src"))
 from evaluation.evaluator import Evaluator
 
 class BaseRetriever(ABC):
