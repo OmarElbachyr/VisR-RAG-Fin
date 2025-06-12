@@ -11,12 +11,9 @@ class DocumentProvider:
 
     def __init__(self, 
                  csv_path: str | Path, 
-                 deduplicate: bool = True, 
                  use_nltk_preprocessor: bool = True
     ) -> None:
         df = pd.read_csv(csv_path, usecols=["chunk_id", "text_description", "image_filename", "query"])
-        if deduplicate:
-            df = df.drop_duplicates(subset=["chunk_id"])
         self._ids: List[str] = df["chunk_id"].tolist()
         self._texts: List[str] = df["text_description"].fillna("").astype(str).tolist()
         self._queries: List[str] = df["query"].fillna("").astype(str).tolist()
