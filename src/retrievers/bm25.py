@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 from typing import Dict, Literal
 import numpy as np
 from rank_bm25 import BM25Okapi
 
-from evaluation.query_qrel_builder import QueryQrelsBuilder
 from evaluation.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
 

@@ -1,35 +1,66 @@
-import torch
-import torch.nn.functional as F
-import numpy as np
-from transformers import AutoTokenizer, AutoModelForMaskedLM
-from typing import Dict, Literal
+from __future__ import annotations
 
-from retrievers.base import BaseRetriever
+from typing import Dict, Literal
+from collections import defaultdict
+
+import numpy as np
+import torch
+from transformers import AutoModelForMaskedLM, AutoTokenizer
+from sparsembed import model as splade_model_module, retrieve as splade_retrieve
+
 from evaluation.document_provider import DocumentProvider
+from retrievers.base import BaseRetriever
 
 
 class SpladeRetriever(BaseRetriever):
-    """Sparse SPLADE retriever with page-level aggregation."""
+    """Sparse‐Max SPLADE with page‐level aggregation."""
 
-    def __init__(self, provider: DocumentProvider, model_name: str = "naver/splade-cocondenser-ensembledistil") -> None:
+    def __init__(
+        self,
+        provider: DocumentProvider,
+        model_name: str = "naver/splade-v3",
+        device: str = "cuda" if torch.cuda.is_available() else "cpu",
+        batch_size: int = 10,
+        k_tokens_index: int = 256,
+    ) -> None:
         super().__init__()
-        self.doc_ids = provider.ids
-        self.documents = provider.texts
+        # preserve chunk→page mapping
         self.chunk_to_page = provider.chunk_to_page
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForMaskedLM.from_pretrained(model_name).to(self.device).eval()
-        self.doc_embs = self._encode_texts(self.documents)
 
-    def _encode_texts(self, texts: list[str]) -> torch.Tensor:
-        inputs = self.tokenizer(texts, return_tensors='pt', padding=True, truncation=True).to(self.device)
-        with torch.no_grad():
-            logits = self.model(**inputs).logits
-            sparse_rep = torch.log1p(F.relu(logits))
-            sparse_rep = torch.max(sparse_rep, dim=1).values
-        return sparse_rep.cpu()
+        # load tokenizer + MLM
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        mlm = AutoModelForMaskedLM.from_pretrained(model_name).to(device)
 
-    def _aggregate_scores(self, vals: list[float], agg: Literal["max", "mean", "sum"]) -> float:
+        # wrap in SPLADE model
+        splade_model = splade_model_module.Splade(
+            model=mlm,
+            tokenizer=tokenizer,
+            device=device
+        )
+
+        # build simple docs list from provider
+        ids, texts = provider.get(kind="text")
+        documents = [{"id": doc_id, "text": txt} for doc_id, txt in zip(ids, texts)]
+
+        # init retriever and index all chunks
+        retr = splade_retrieve.SpladeRetriever(
+            key="id",
+            on=["text"],
+            model=splade_model
+        )
+        retr = retr.add(
+            documents=documents,
+            batch_size=batch_size,
+            k_tokens=k_tokens_index
+        )
+        self._retriever = retr
+
+        # store defaults
+        self.batch_size = batch_size
+        self.default_k_tokens = k_tokens_index
+
+    @staticmethod
+    def _aggregate_scores(vals: list[float], agg: Literal["max", "mean", "sum"]) -> float:
         if agg == "max":
             return float(max(vals))
         elif agg == "sum":
@@ -37,19 +68,49 @@ class SpladeRetriever(BaseRetriever):
         elif agg == "mean":
             return float(np.mean(vals))
         else:
-            raise ValueError("Unsupported aggregation method.")
+            raise ValueError(f"Unsupported aggregation method: {agg!r}")
 
-    def search(self, queries: Dict[str, str], agg: Literal["max", "mean", "sum"] = "max") -> Dict[str, Dict[str, float]]:
+    def search(
+        self,
+        queries: Dict[str, str],
+        agg: Literal["max", "mean", "sum"] = "max",
+        *,
+        k_tokens: int | None = None,
+        k: int = 100
+    ) -> Dict[str, Dict[str, float]]:
+        """
+        :param queries: mapping qid→text
+        :param agg: how to roll up chunk scores to page scores
+        :param k_tokens: max activated tokens per query (defaults to indexing value)
+        :param k: how many chunk‐hits to fetch before aggregation
+        :returns: mapping qid→{ page_id: aggregated_score }
+        """
+        k_tokens = k_tokens or self.default_k_tokens
+
+        # run SPLADE; one list of hits per query
+        raw = self._retriever(
+            list(queries.values()),
+            k_tokens=k_tokens,
+            k=k,
+            batch_size=self.batch_size
+        )
+
         run: Dict[str, Dict[str, float]] = {}
-        for qid, qtext in queries.items():
-            query_emb = self._encode_texts([qtext])[0]
-            scores = torch.matmul(self.doc_embs, query_emb).numpy()
-            page_scores: Dict[str, list[float]] = {}
-            for doc_id, score in zip(self.doc_ids, scores):
+        for qid, hits in zip(queries.keys(), raw):
+            page_scores: Dict[str, list[float]] = defaultdict(list)
+            for hit in hits:
+                doc_id = hit["id"]
+                score = hit["similarity"]
                 page = self.chunk_to_page.get(doc_id)
                 if page is None:
                     continue
-                page = page.split('.')[0]  # remove .png or file extension
-                page_scores.setdefault(page, []).append(score)
-            run[qid] = {p: self._aggregate_scores(vals, agg) for p, vals in page_scores.items()}
+                # strip extension if any
+                page = str(page).split(".", 1)[0]
+                page_scores[page].append(score)
+
+            run[qid] = {
+                page: self._aggregate_scores(vals, agg)
+                for page, vals in page_scores.items()
+            }
+
         return run

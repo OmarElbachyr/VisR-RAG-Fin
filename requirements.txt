@@ -12,3 +12,4 @@ unstructured[image]
 pytrec-eval==0.5
 faiss-cpu
 pylate
+sparsembed==0.1.1

@@ -1,6 +1,3 @@
-import sys 
-import os 
-sys.path.append(os.path.abspath("C:/Users/laura.bernardy/OneDrive - University of Luxembourg/Documents/GitHub/vqa-ir-qa/src"))
 from retrievers.splade import SpladeRetriever
 from evaluation.document_provider import DocumentProvider
 from evaluation.query_qrel_builder import QueryQrelsBuilder
@@ -11,7 +8,7 @@ if __name__ == "__main__":
     provider = DocumentProvider(csv_path, use_nltk_preprocessor=False)
     queries, qrels = QueryQrelsBuilder(csv_path).build()
 
-    splade = SpladeRetriever(provider)
+    splade = SpladeRetriever(provider, model_name="naver/splade-v3")
     run = splade.search(queries, agg="max")  # max, mean, sum
 
 
