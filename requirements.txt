@@ -13,3 +13,6 @@ pytrec-eval==0.5
 faiss-cpu
 pylate
 sparsembed==0.1.1
+torch==2.7.1
+torchvision==0.22.1
+colpali-engine==0.3.10

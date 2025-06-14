@@ -1,22 +1,22 @@
-import sys
-import os
 import json
 import time
-
-sys.path.append(os.path.abspath("src"))
 
 from retrievers.bm25 import BM25Retriever
 from retrievers.sentence_transformer import SentenceTransformerRetriever
 from retrievers.colbert import ColBERTRetriever
 from retrievers.splade import SpladeRetriever
+from retrievers.colpali import ColPaliRetriever
 from evaluation.document_provider import DocumentProvider
 from evaluation.query_qrel_builder import QueryQrelsBuilder
 
-def test_retriever(retriever_class, provider, queries, qrels, results, **kwargs):
+def test_retriever(retriever_class, provider, queries, qrels, results, agg="max", **kwargs):
     print(f"Testing {retriever_class.__name__}...")
     start_time = time.time()
     retriever = retriever_class(provider, **kwargs)
-    run = retriever.search(queries, agg="max")
+    if "agg" in retriever.search.__code__.co_varnames:
+        run = retriever.search(queries, agg=agg)
+    else:
+        run = retriever.search(queries)
     retrieval_time = time.time() - start_time
     metrics = retriever.evaluate(run, qrels, verbose=True)
     print(metrics)
@@ -37,8 +37,10 @@ if __name__ == "__main__":
 
     test_retriever(BM25Retriever, provider, queries, qrels, results)
     test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results, model_name="BAAI/bge-m3")
-    test_retriever(ColBERTRetriever, provider, queries, qrels, results, model_name="lightonai/GTE-ModernColBERT-v1")
-    test_retriever(SpladeRetriever, provider, queries, qrels, results, model_name="naver/splade-v3")
+    test_retriever(ColBERTRetriever, provider, queries, qrels, results, model_name="lightonai/GTE-ModernColBERT-v1", index_folder="indexes/pylate-index", index_name="index", override=True)
+    test_retriever(SpladeRetriever, provider, queries, qrels, results, model_name="naver/splade-cocondenser-ensembledistil")
+    test_retriever(ColPaliRetriever, provider, queries, qrels, results, model_name="vidore/colpali-v1.3",
+                   image_dir="data/pages", batch_size=32)
 
     with open("src/results/retriever_results.json", "w") as f:
         json.dump(results, f, indent=4)
