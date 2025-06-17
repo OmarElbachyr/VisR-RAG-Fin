@@ -1,0 +1,75 @@
+[
+  {
+    "doc_name": "3M_2018_10K",
+    "qa_pairs": [
+      {
+        "question": "What is the FY2018 capital expenditure amount (in USD millions) for 3M? Give a response to the question by relying on the details shown in the cash flow statement.",
+        "answer": "$1577.00",
+        "evidence_pages": [
+          60
+        ]
+      },
+      {
+        "question": "Assume that you are a public equities analyst. Answer the following question by primarily using information that is shown in the balance sheet: what is the year end FY2018 net PPNE for 3M? Answer in USD billions.",
+        "answer": "$8.70",
+        "evidence_pages": [
+          58
+        ]
+      }
+    ]
+  },
+  {
+    "doc_name": "3M_2022_10K",
+    "qa_pairs": [
+      {
+        "question": "Is 3M a capital-intensive business based on FY2022 data?",
+        "answer": "No, the company is managing its CAPEX and Fixed Assets pretty efficiently, which is evident from below key metrics:\nCAPEX/Revenue Ratio: 5.1%\nFixed assets/Total Assets: 20%\nReturn on Assets= 12.4%",
+        "evidence_pages": [
+          48,
+          50,
+          52
+        ]
+      },
+      {
+        "question": "What drove operating margin change as of FY2022 for 3M? If operating margin is not a useful metric for a company like this, then please state that and explain why.",
+        "answer": "Operating Margin for 3M in FY2022 has decreased by 1.7% primarily due to: \n-Decrease in gross Margin\n-mostly one-off charges including Combat Arms Earplugs litigation, impairment related to exiting PFAS manufacturing, costs related to exiting Russia and divestiture-related restructuring\ncharges",
+        "evidence_pages": [
+          27
+        ]
+      },
+      {
+        "question": "If we exclude the impact of M&A, which segment has dragged down 3M's overall growth in 2022?",
+        "answer": "The consumer segment shrunk by 0.9% organically.",
+        "evidence_pages": [
+          25
+        ]
+      }
+    ]
+  },
+  {
+    "doc_name": "3M_2023Q2_10Q",
+    "qa_pairs": [
+      {
+        "question": "Does 3M have a reasonably healthy liquidity profile based on its quick ratio for Q2 of FY2023? If the quick ratio is not relevant to measure liquidity, please state that and explain why.",
+        "answer": "No. The quick ratio for 3M was 0.96 by Jun'23 close, which needs a bit of an improvement to touch the 1x mark",
+        "evidence_pages": [
+          5
+        ]
+      },
+      {
+        "question": "Which debt securities are registered to trade on a national securities exchange under 3M's name as of Q2 of 2023?",
+        "answer": "Following debt securities registered under 3M's name are listed to trade on the New York Stock Exchange:\n-1.500% Notes due 2026 (Trading Symbol: MMM26)\n-1.750% Notes due 2030 (Trading Symbol: MMM30)\n-1.500% Notes due 2031 (Trading Symbol: MMM31)",
+        "evidence_pages": [
+          1
+        ]
+      },
+      {
+        "question": "Does 3M maintain a stable trend of dividend distribution?",
+        "answer": "Yes, not only they distribute the dividends on a routine basis, 3M has also been increasing the per share dividend for consecutive 65 years",
+        "evidence_pages": [
+          62
+        ]
+      }
+    ]
+  }
+]

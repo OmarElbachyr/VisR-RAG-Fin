@@ -50,7 +50,7 @@ class DocumentProvider:
         """
         return {
             "unique_pages": len(set(self._chunk_to_page.values())),
-            "total_chunks": len(self._ids),
+            "total_chunks": len(set(self._ids)),  # Only unique chunk_ids
             "unique_queries": len(set(self._queries))
         }
 
