@@ -8,6 +8,7 @@ from retrievers.colbert import ColBERTRetriever
 from retrievers.splade import SpladeRetriever
 from retrievers.colpali import ColPaliRetriever
 from retrievers.clip import ClipRetriever
+from retrievers.siglip import SigLIPRetriever
 from evaluation.document_provider import DocumentProvider
 from evaluation.query_qrel_builder import QueryQrelsBuilder
 import nltk
@@ -47,7 +48,8 @@ if __name__ == "__main__":
                    image_dir="data/pages", batch_size=32)
     test_retriever(ClipRetriever, provider, queries, qrels, results, model_name="openai/clip-vit-base-patch32",
                    image_dir="data/pages", batch_size=32)
-
+    test_retriever(SigLIPRetriever, provider, queries, qrels, results,model_name="google/siglip-base-patch16-224",
+                   image_dir="data/pages", batch_size=32)
 
     with open("src/results/retriever_results.json", "w") as f:
         json.dump(results, f, indent=4)

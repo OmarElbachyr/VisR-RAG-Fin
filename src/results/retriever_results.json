@@ -26,7 +26,7 @@
                 "precision": 0.0896103896103896
             }
         },
-        "retrieval_time": 0.7316110134124756
+        "retrieval_time": 0.7335946559906006
     },
     "SentenceTransformerRetriever": {
         "metrics": {
@@ -55,7 +55,7 @@
                 "precision": 0.09318181818181817
             }
         },
-        "retrieval_time": 11.444961786270142
+        "retrieval_time": 11.502125263214111
     },
     "ColBERTRetriever": {
         "metrics": {
@@ -84,7 +84,7 @@
                 "precision": 0.09545454545454544
             }
         },
-        "retrieval_time": 24.442201614379883
+        "retrieval_time": 24.1189968585968
     },
     "SpladeRetriever": {
         "metrics": {
@@ -113,7 +113,7 @@
                 "precision": 0.09577922077922076
             }
         },
-        "retrieval_time": 4.665088176727295
+        "retrieval_time": 4.723679065704346
     },
     "ColPaliRetriever": {
         "metrics": {
@@ -142,7 +142,7 @@
                 "precision": 0.09837662337662337
             }
         },
-        "retrieval_time": 15.804066181182861
+        "retrieval_time": 15.513200759887695
     },
     "ClipRetriever": {
         "metrics": {
@@ -171,6 +171,35 @@
                 "precision": 0.044805194805194806
             }
         },
-        "retrieval_time": 3.2595622539520264
+        "retrieval_time": 3.625720739364624
+    },
+    "SigLIPRetriever": {
+        "metrics": {
+            "1": {
+                "ndcg": 0.0,
+                "map": 0.0,
+                "recall": 0.0,
+                "precision": 0.0
+            },
+            "3": {
+                "ndcg": 0.0,
+                "map": 0.0,
+                "recall": 0.0,
+                "precision": 0.0
+            },
+            "5": {
+                "ndcg": 0.41386517907373915,
+                "map": 0.37591991341991343,
+                "recall": 0.5292207792207793,
+                "precision": 0.10584415584415582
+            },
+            "10": {
+                "ndcg": 0.4536681333574938,
+                "map": 0.39228380746237884,
+                "recall": 0.6525974025974026,
+                "precision": 0.06525974025974027
+            }
+        },
+        "retrieval_time": 4.081580877304077
     }
 }
