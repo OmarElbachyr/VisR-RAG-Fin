@@ -26,7 +26,7 @@
                 "precision": 0.0896103896103896
             }
         },
-        "retrieval_time": 0.7335946559906006
+        "retrieval_time": 0.7277500629425049
     },
     "SentenceTransformerRetriever": {
         "metrics": {
@@ -55,7 +55,7 @@
                 "precision": 0.09318181818181817
             }
         },
-        "retrieval_time": 11.502125263214111
+        "retrieval_time": 12.129417657852173
     },
     "ColBERTRetriever": {
         "metrics": {
@@ -84,7 +84,7 @@
                 "precision": 0.09545454545454544
             }
         },
-        "retrieval_time": 24.1189968585968
+        "retrieval_time": 24.074465036392212
     },
     "SpladeRetriever": {
         "metrics": {
@@ -113,7 +113,7 @@
                 "precision": 0.09577922077922076
             }
         },
-        "retrieval_time": 4.723679065704346
+        "retrieval_time": 4.733424663543701
     },
     "ColPaliRetriever": {
         "metrics": {
@@ -130,19 +130,19 @@
                 "precision": 0.0
             },
             "5": {
-                "ndcg": 0.910314501380957,
-                "map": 0.8930735930735929,
-                "recall": 0.961038961038961,
-                "precision": 0.19220779220779216
+                "ndcg": 0.02763008256663715,
+                "map": 0.022835497835497834,
+                "recall": 0.04220779220779221,
+                "precision": 0.008441558441558443
             },
             "10": {
-                "ndcg": 0.9177598661003418,
-                "map": 0.8961979488765204,
-                "recall": 0.9837662337662337,
-                "precision": 0.09837662337662337
+                "ndcg": 0.04300679280489796,
+                "map": 0.028965677179962894,
+                "recall": 0.09090909090909091,
+                "precision": 0.009090909090909092
             }
         },
-        "retrieval_time": 15.513200759887695
+        "retrieval_time": 56.82205414772034
     },
     "ClipRetriever": {
         "metrics": {
@@ -171,7 +171,7 @@
                 "precision": 0.044805194805194806
             }
         },
-        "retrieval_time": 3.625720739364624
+        "retrieval_time": 3.58244252204895
     },
     "SigLIPRetriever": {
         "metrics": {
@@ -200,6 +200,6 @@
                 "precision": 0.06525974025974027
             }
         },
-        "retrieval_time": 4.081580877304077
+        "retrieval_time": 3.7671332359313965
     }
 }

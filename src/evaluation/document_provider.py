@@ -1,10 +1,13 @@
 from __future__ import annotations
-
+import sys 
+import os 
+sys.path.append(os.path.abspath("/home/laura/vqa-ir-qa/src"))
 from pathlib import Path
 from typing import Callable, Dict, List, Any, Tuple
 import pandas as pd
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+
 
 class DocumentProvider:
     """Load chunk corpus and expose views and helpers."""
