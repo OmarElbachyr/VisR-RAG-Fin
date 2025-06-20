@@ -16,7 +16,9 @@ if __name__ == "__main__":
                                 model_name="lightonai/GTE-ModernColBERT-v1", 
                                 index_folder="indexes/pylate-index", 
                                 index_name="index", 
-                                override=True)
+                                override=True,
+                                batch_size=32,
+                                device_map="cuda")
     
     run = retriever.search(queries, k=-1, agg='max') # -1 for all documents
 
@@ -25,5 +27,3 @@ if __name__ == "__main__":
 
     # metrics = retriever.evaluate(queries, qrels)
     retriever.evaluate(run, qrels, verbose=True)
-
-    

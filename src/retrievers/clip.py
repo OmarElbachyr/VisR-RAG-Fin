@@ -21,7 +21,7 @@ class ClipRetriever(BaseRetriever):
         provider: DocumentProvider,
         image_dir: Union[str, Path],
         model_name: str = "openai/clip-vit-base-patch32",  
-        device: str = "cuda" if torch.cuda.is_available() else "cpu",
+        device_map: str = "cuda" if torch.cuda.is_available() else "cpu",
         batch_size: int = 16,
     ) -> None:
         super().__init__()
@@ -30,10 +30,11 @@ class ClipRetriever(BaseRetriever):
         image_dir = Path(image_dir)
 
         # Load CLIP model & processor
-        self.model = CLIPModel.from_pretrained(model_name).eval().to(device)
+        self.model = CLIPModel.from_pretrained(model_name).eval().to(device_map)
         self.processor = CLIPProcessor.from_pretrained(model_name)
-        self.device = device
-
+        self.device = next(self.model.parameters()).device
+        print(f"Using device: {self.device}")
+        
         # Load and embed all images
         images = [Image.open(image_dir / fn).convert("RGB") for fn in filenames]
         self.page_embeddings = self._embed_images(images, batch_size)

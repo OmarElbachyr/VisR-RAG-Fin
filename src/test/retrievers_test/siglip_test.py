@@ -15,7 +15,7 @@ if __name__ == "__main__":
         provider,
         image_dir=image_dir,
         model_name="google/siglip-base-patch16-224",
-        device="cuda",
+        device_map="cuda",
         batch_size=32
     )
 

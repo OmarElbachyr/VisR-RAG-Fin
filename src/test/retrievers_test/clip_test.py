@@ -15,7 +15,7 @@ if __name__ == "__main__":
         provider,
         image_dir=image_dir,
         model_name="openai/clip-vit-base-patch32", 
-        device="cuda",
+        device_map="cuda",
         batch_size=32
     )
 

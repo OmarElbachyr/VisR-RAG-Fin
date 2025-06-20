@@ -16,3 +16,5 @@ sparsembed
 torch>=2.5,<2.7
 torchvision
 colpali-engine
+bitsandbytes
+sentencepiece

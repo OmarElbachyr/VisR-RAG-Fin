@@ -7,6 +7,7 @@ import numpy as np
 
 from evaluation.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
+import torch
 
 
 class ColBERTRetriever(BaseRetriever):
@@ -14,12 +15,17 @@ class ColBERTRetriever(BaseRetriever):
         self,
         provider: DocumentProvider,
         model_name: str = "lightonai/GTE-ModernColBERT-v1",
+        device_map: str = "cuda" if torch.cuda.is_available() else "cpu",
+        batch_size: int = 16,
         index_folder: str | Path = "indexes/pylate-index",
         index_name: str = "index",
         override: bool = True,
     ) -> None:
         super().__init__()
-        self.model = models.ColBERT(model_name_or_path=model_name)
+        self.model = models.ColBERT(model_name_or_path=model_name, device=device_map)
+        self.device = next(self.model.parameters()).device
+        print(f"Using device: {self.device}")
+
         self.index = indexes.Voyager(
             index_folder=str(index_folder),
             index_name=index_name,
@@ -30,7 +36,8 @@ class ColBERTRetriever(BaseRetriever):
         self.chunk_to_page = provider.chunk_to_page
         embeddings = self.model.encode(
             texts,
-            batch_size=32,
+            device=self.device,
+            batch_size=batch_size,
             is_query=False,
             show_progress_bar=True,
         )
@@ -55,6 +62,7 @@ class ColBERTRetriever(BaseRetriever):
         qtexts = list(queries.values())
         qembs = self.model.encode(
             qtexts,
+            device=self.device,
             batch_size=32,
             is_query=True,
             show_progress_bar=True,

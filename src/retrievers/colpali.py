@@ -36,8 +36,9 @@ class ColPaliRetriever(BaseRetriever):
             torch_dtype=torch.bfloat16,
             device_map=device_map
         ).eval()
-        self.device = next(self.model.parameters()).device
         self.processor = ColPaliProcessor.from_pretrained(model_name)
+        self.device = next(self.model.parameters()).device
+        print(f"Using device: {self.device}")
 
         # Load and embed each page image
         images = [Image.open(image_dir / fn).convert("RGB") for fn in filenames]

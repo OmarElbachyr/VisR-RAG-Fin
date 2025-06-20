@@ -19,7 +19,7 @@ class SigLIPRetriever(BaseRetriever):
         provider: DocumentProvider,
         image_dir: Union[str, Path],
         model_name: str = "google/siglip-base-patch16-224",
-        device: str = "cuda" if torch.cuda.is_available() else "cpu",
+        device_map: str = "cuda" if torch.cuda.is_available() else "cpu",
         batch_size: int = 16,
     ) -> None:
         super().__init__()
@@ -34,12 +34,13 @@ class SigLIPRetriever(BaseRetriever):
         )   
         self.model = AutoModel.from_pretrained(
             model_name,
-            device_map="auto",
+            device_map=device_map,
         ).eval()
 
         self.processor = AutoProcessor.from_pretrained(model_name)
-        self.device = device
-
+        self.device = next(self.model.parameters()).device
+        print(f"Using device: {self.device}")
+        
         # Load and embed all images
         images = [Image.open(image_dir / fn).convert("RGB") for fn in filenames]
         self.page_embeddings = self._embed_images(images, batch_size)
