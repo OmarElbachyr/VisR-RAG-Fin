@@ -1,6 +1,4 @@
-haystack-ai==2.14.1 
-haystack-experimental==0.10.0
-docling-haystack==0.1.1
+git+https://github.com/illuin-tech/colpali.git 
 rank-bm25==0.2.2
 nltk
 sentence-transformers
@@ -15,6 +13,5 @@ pylate
 sparsembed
 torch>=2.5,<2.7
 torchvision
-colpali-engine
 bitsandbytes
 sentencepiece
