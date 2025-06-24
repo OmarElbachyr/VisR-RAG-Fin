@@ -2,7 +2,7 @@ import sys
 import os 
 sys.path.append(os.path.abspath("/home/omar/projects/vqa-ir-qa/src"))
 
-from retrievers.colqwen2_5 import ColQwen2_5Retriever
+from retrievers.colqwen2 import ColQwen2Retriever
 from evaluation.document_provider import DocumentProvider
 from evaluation.query_qrel_builder import QueryQrelsBuilder
 
@@ -17,20 +17,11 @@ if __name__ == "__main__":
     # Build your queries and relevance judgments
     queries, qrels = QueryQrelsBuilder(csv_path).build()
 
-    names = [
-        "vidore/colqwen2.5-v0.2", # works
-        "tsystems/colqwen2.5-3b-multilingual-v1.0",  # works (the only multilingual model) and they have colqwen2 models, 
-        "nomic-ai/colnomic-embed-multimodal-3b", # works, they have single vector multimodal models, e.g., nomic-ai/nomic-embed-multimodal-7b
-        "nomic-ai/colnomic-embed-multimodal-7b", # works
-        "Metric-AI/ColQwen2.5-3b-multilingual-v1.0", # works
-        "Metric-AI/ColQwen2.5-7b-multilingual-v1.0", # works
-    ]
-
-    # Initialize the ColQwen2.5 retriever
-    retriever = ColQwen2_5Retriever(
+    # Initialize the ColQwen2 retriever
+    retriever = ColQwen2Retriever(
         provider=provider,
         image_dir=image_dir,
-        model_name='tsystems/colqwen2.5-3b-multilingual-v1.0',
+        model_name='vidore/colqwen2-v1.0',  
         device_map="cuda",        
         batch_size=8,            # for image‐embedding
     )

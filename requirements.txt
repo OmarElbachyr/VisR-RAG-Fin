@@ -1,4 +1,7 @@
-git+https://github.com/illuin-tech/colpali.git 
+# git+https://github.com/illuin-tech/colpali
+colpali-engine==0.3.10
+transformers==4.51.3
+flash-attn
 rank-bm25==0.2.2
 nltk
 sentence-transformers

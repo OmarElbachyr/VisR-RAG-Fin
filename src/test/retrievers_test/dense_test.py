@@ -11,7 +11,11 @@ if __name__ == "__main__":
     
     queries, qrels = QueryQrelsBuilder(csv_path).build()
 
-    retriever = SentenceTransformerRetriever(provider)
+    # instruct models test
+    # retriever = SentenceTransformerRetriever(provider, model_name='intfloat/multilingual-e5-large-instruct', is_instruct=True, device_map='cuda')
+    
+    # non instruct models test
+    retriever = SentenceTransformerRetriever(provider, model_name='intfloat/multilingual-e5-large', is_instruct=False, device_map='cuda')
     
     run = retriever.search(queries, agg='max')
     # qid = 'q1'
