@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path
 from typing import List, Tuple
-
+import shutil
 import pandas as pd
 from PIL import Image
 from tqdm import tqdm
@@ -14,15 +14,15 @@ from unstructured.partition.image import partition_image  # OCR / layout extract
 # ---------------------------------------------------------------------------
 # CONFIG (kept exactly as in the original script, plus chunk‑image settings)
 # ---------------------------------------------------------------------------
-JSON_PATH = Path("data/label-studio-data.json")  # source annotations
-NOISE_IMG_DIR = Path("data/indexed_pages")
-IMG_DIR = Path("data/pages")                     # folder with PNG pages
-CSV_PATH = Path("src/dataset/chunked_pages_with_noise.csv")     # incremental CSV store
+JSON_PATH = Path("/home/laura/vqa-ir-qa/data/label-studio-data.json")  # source annotations
+NOISE_IMG_DIR = Path("/home/laura/vqa-ir-qa/data/indexed_pages")
+IMG_DIR = Path("/home/laura/vqa-ir-qa/data/pages")                     # folder with PNG pages
+CSV_PATH = Path("/home/laura/vqa-ir-qa/src/dataset/chunked_pages_with_noise.csv")     # incremental CSV store
 STRATEGY = "hi_res"                             # partition_image strategy
 LIMIT = -1                                        # set e.g. 3 for a quick test
 
 # Where to store the cropped figure chunks
-CHUNK_IMG_DIR = Path("data/chunks_images")
+CHUNK_IMG_DIR = Path("/home/laura/vqa-ir-qa/data/chunks_images")
 CHUNK_IMG_DIR.mkdir(parents=True, exist_ok=True)
 
 # Fractional padding to apply around figure bounding boxes (e.g. 0.05 → 5 %)
@@ -233,6 +233,25 @@ def main() -> None:
         .drop_duplicates(subset=["image_filename", "query", "chunk_id"])
     )
     df_all.to_csv(CSV_PATH, index=False)
+
+    def copy_all_images_to_all_pages():
+        all_pages_dir = Path("/home/laura/vqa-ir-qa/data/all_pages")
+        all_pages_dir.mkdir(parents=True, exist_ok=True)
+
+        src_dirs = [NOISE_IMG_DIR, IMG_DIR]
+
+        for src_dir in src_dirs:
+            for img_path in src_dir.glob("*.png"):
+                dst_path = all_pages_dir / img_path.name
+                try:
+                    shutil.copy2(img_path, dst_path)
+                except Exception as e:
+                    tqdm.write(f"⚠️ Failed to copy {img_path} to {dst_path}: {e}")
+
+    # Call the function
+    copy_all_images_to_all_pages()
+    print("📁 All images copied to /data/all_pages")
+
     print(f"✅ Added {len(df_new)} rows (total: {len(df_all)}) → {CSV_PATH}")
 
 

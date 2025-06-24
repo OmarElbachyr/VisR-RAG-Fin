@@ -1,7 +1,7 @@
 from __future__ import annotations
 import sys 
 import os 
-sys.path.append(os.path.abspath("/home/laura/vqa-ir-qa/src"))
+sys.path.append(os.path.abspath("/home/laura/vqa-ir-qa/"))
 from pathlib import Path
 from typing import Callable, Dict, List, Any, Tuple
 import pandas as pd
