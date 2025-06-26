@@ -1,3 +1,7 @@
+import sys 
+import os 
+sys.path.append(os.path.abspath("/home/laura/vqa-ir-qa/src"))
+
 from retrievers.colbert import ColBERTRetriever 
 from evaluation.query_qrel_builder import QueryQrelsBuilder
 from evaluation.document_provider import DocumentProvider
@@ -5,7 +9,7 @@ from evaluation.document_provider import DocumentProvider
 
 if __name__ == "__main__":
     
-    csv_path = "src/dataset/chunked_pages.csv"
+    csv_path = "/home/laura/vqa-ir-qa/src/dataset/chunked_pages_with_noise.csv"
     provider = DocumentProvider(csv_path)
     print(f'Stats: {provider.stats}')
     
@@ -13,7 +17,7 @@ if __name__ == "__main__":
 
 
     retriever = ColBERTRetriever(provider, 
-                                model_name="lightonai/GTE-ModernColBERT-v1", 
+                                model_name="colbert-ir/colbertv2.0", 
                                 index_folder="indexes/pylate-index", 
                                 index_name="index", 
                                 override=True,
