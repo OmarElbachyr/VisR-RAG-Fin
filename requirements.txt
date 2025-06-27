@@ -6,6 +6,7 @@ rank-bm25==0.2.2
 nltk
 sentence-transformers
 pytesseract
+pymupdf
 pillow
 matplotlib
 datasets

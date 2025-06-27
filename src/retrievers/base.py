@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Dict
-import sys 
-import os 
 from evaluation.evaluator import Evaluator
+from evaluation.evaluator_ir import Evaluator_ir
 
 class BaseRetriever(ABC):
     def __init__(self):
         self.evaluator = Evaluator()
+        self.evaluator_ir = Evaluator_ir()
     
     @abstractmethod
     def search(self, queries: Dict[str, str], **kwargs) -> Dict[str, Dict[str, float]]:
@@ -15,6 +15,7 @@ class BaseRetriever(ABC):
 
     def evaluate(self, run: Dict[str, Dict[str, float]], 
                 qrels: Dict[str, Dict[str, int]], 
+                k_values: list = [1, 3, 5, 10],
                 verbose: bool = True) -> Dict[str, Dict[str, float]]:
         """
         Evaluate retrieval results
@@ -25,4 +26,4 @@ class BaseRetriever(ABC):
         Returns:
             Evaluation metrics for different k values
         """
-        return self.evaluator.evaluate(run, qrels, verbose)
+        return self.evaluator.evaluate(run, qrels, k_values, verbose), self.evaluator_ir.evaluate(run, qrels, k_values, verbose)

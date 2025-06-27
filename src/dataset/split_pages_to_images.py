@@ -1,9 +1,12 @@
 import os
+from anyio import Path
 import fitz
 from PIL import Image
 
-PDF_DIR = "/home/laura/vqa-ir-qa/data/indexed_pdfs"
-OUTPUT_IMAGE_DIR = "/home/laura/vqa-ir-qa/data/indexed_pages"
+PDF_DIR = "data/indexed_pdfs"
+OUTPUT_IMAGE_DIR = Path("data/noise_pages")
+
+OUTPUT_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 def page_pixmap_to_image(page):
     pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
@@ -37,5 +40,5 @@ for root, _, files in os.walk(PDF_DIR):
             os.makedirs(out_dir, exist_ok=True)
             out_path = os.path.join(out_dir, out_fname)
 
-            img.save(out_path, format="PNG")
+            img.save(out_path, format="PNG", dpi=(200, 200))
             print(f"✓ Saved: {out_path}")

@@ -1,7 +1,6 @@
 from __future__ import annotations
 import sys 
 import os 
-sys.path.append(os.path.abspath("/home/laura/vqa-ir-qa/"))
 from pathlib import Path
 from typing import Callable, Dict, List, Any, Tuple
 import pandas as pd
@@ -19,7 +18,7 @@ class DocumentProvider:
         df = pd.read_csv(csv_path, usecols=["chunk_id", "text_description", "image_filename", "query"])
         self._ids: List[str] = df["chunk_id"].tolist()
         self._texts: List[str] = df["text_description"].fillna("").astype(str).tolist()
-        self._queries: List[str] = df["query"].fillna("").astype(str).tolist()
+        self._queries: List[str] = [q for q in df["query"].fillna("").astype(str).tolist() if q.strip()]
         self._chunk_to_page: Dict[str, int] = dict(zip(df["chunk_id"], df["image_filename"]))
         self._tokens: list[list[str]] | None = None
         self._embed_cache: Dict[Any, List[Any]] = {}

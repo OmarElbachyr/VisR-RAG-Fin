@@ -20,7 +20,7 @@ class SpladeRetriever(BaseRetriever):
         provider: DocumentProvider,
         model_name: str = "naver/splade-v3",
         device: str = "cuda" if torch.cuda.is_available() else "cpu",
-        batch_size: int = 10,
+        batch_size: int = 16,
         k_tokens_index: int = 256,
     ) -> None:
         super().__init__()

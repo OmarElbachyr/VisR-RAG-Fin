@@ -2,7 +2,7 @@ import json
 import time
 import sys 
 import os 
-sys.path.append(os.path.abspath("/home/laura/vqa-ir-qa/src"))
+sys.path.append(os.path.abspath("/home/omar/projects/vqa-ir-qa/src"))
 from retrievers.bm25 import BM25Retriever
 from retrievers.sentence_transformer import SentenceTransformerRetriever
 from retrievers.colbert import ColBERTRetriever
@@ -43,7 +43,9 @@ def test_retriever(retriever_class, provider, queries, qrels, results, agg="max"
     }
 
 if __name__ == "__main__":
-    csv_path = "/home/laura/vqa-ir-qa/src/dataset/chunked_pages_with_noise.csv"
+    csv_path = "src/dataset/chunks/chunked_pages.csv"
+    image_dir = "data/pages"
+    results_path = "src/results/retriever_results_annotated.json"
 
     provider = DocumentProvider(csv_path, use_nltk_preprocessor=True)
     print(provider.stats)
@@ -54,23 +56,28 @@ if __name__ == "__main__":
         "models": {}
     }
 
-    # Test each retriever
     test_retriever(BM25Retriever, provider, queries, qrels, results["models"])
     test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], model_name="BAAI/bge-m3")
     test_retriever(ColBERTRetriever, provider, queries, qrels, results["models"], model_name="colbert-ir/colbertv2.0", index_folder="indexes/pylate-index", index_name="index", override=True)
-    test_retriever(SpladeRetriever, provider, queries, qrels, results["models"], model_name="naver/splade-cocondenser-ensembledistil")
-    test_retriever(ColPaliRetriever, provider, queries, qrels, results["models"], model_name="vidore/colpali-v1.3",
-                   image_dir="/home/laura/vqa-ir-qa/data/all_pages", batch_size=16)
+    test_retriever(SpladeRetriever, provider, queries, qrels, results["models"], model_name="naver/splade-v3",
+                   batch_size=32, device="cuda")
     test_retriever(ClipRetriever, provider, queries, qrels, results["models"], model_name="openai/clip-vit-base-patch32",
-                   image_dir="/home/laura/vqa-ir-qa/data/all_pages", batch_size=16)
+                   image_dir=image_dir, batch_size=32, device_map="cuda")
     test_retriever(SigLIPRetriever, provider, queries, qrels, results["models"], model_name="google/siglip-base-patch16-224",
-                   image_dir="/home/laura/vqa-ir-qa/data/all_pages", batch_size=16)
-    test_retriever(ColQwen2_5Retriever, provider, queries, qrels, results["models"], model_name="tsystems/colqwen2.5-3b-multilingual-v1.0",
-                   image_dir="/home/laura/vqa-ir-qa/data/all_pages", batch_size=16)
-    test_retriever(ColQwen2Retriever, provider, queries, qrels, results["models"], model_name="vidore/colqwen2-v1.0",
-                   image_dir="/home/laura/vqa-ir-qa/data/all_pages", batch_size=16)
-    test_retriever(ColSmol, provider, queries, qrels, results["models"], model_name="vidore/colSmol-500M",
-                   image_dir="/home/laura/vqa-ir-qa/data/all_pages", batch_size=16)
+                   image_dir=image_dir, batch_size=32, device_map="cuda")
+    test_retriever(ColPaliRetriever, provider, queries, qrels, results["models"], model_name="vidore/colpali-v1.3",
+                   image_dir=image_dir, batch_size=32)
+    # ColQwen2 3B and 7B models
+    # test_retriever(ColQwen2_5Retriever, provider, queries, qrels, results["models"], model_name="nomic-ai/colnomic-embed-multimodal-3b",
+    #                image_dir=image_dir, batch_size=8)
+    # test_retriever(ColQwen2_5Retriever, provider, queries, qrels, results["models"], model_name="nomic-ai/colnomic-embed-multimodal-7b",
+    #                image_dir=image_dir, batch_size=8)
+    # 
+    # test_retriever(ColQwen2Retriever, provider, queries, qrels, results["models"], model_name="vidore/colqwen2-v1.0",
+    #                image_dir=image_dir, batch_size=4)
+    # test_retriever(ColSmol, provider, queries, qrels, results["models"], model_name="vidore/colSmol-500M",
+    #                image_dir=image_dir, batch_size=16)
     # Save results to JSON file
-    with open("src/results/retriever_results.json", "w") as f:
+    with open(results_path, "w") as f:
         json.dump(results, f, indent=4)
+    print(f"Results saved to {results_path}")
