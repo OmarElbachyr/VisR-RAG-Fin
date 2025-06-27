@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # Test each retriever
     test_retriever(BM25Retriever, provider, queries, qrels, results["models"])
     test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], model_name="BAAI/bge-m3")
-    #test_retriever(ColBERTRetriever, provider, queries, qrels, results["models"], model_name="lightonai/GTE-ModernColBERT-v1", index_folder="indexes/pylate-index", index_name="index", override=True)
+    test_retriever(ColBERTRetriever, provider, queries, qrels, results["models"], model_name="colbert-ir/colbertv2.0", index_folder="indexes/pylate-index", index_name="index", override=True)
     test_retriever(SpladeRetriever, provider, queries, qrels, results["models"], model_name="naver/splade-cocondenser-ensembledistil")
     test_retriever(ColPaliRetriever, provider, queries, qrels, results["models"], model_name="vidore/colpali-v1.3",
                    image_dir="/home/laura/vqa-ir-qa/data/all_pages", batch_size=16)
