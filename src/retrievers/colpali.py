@@ -28,7 +28,7 @@ class ColPaliRetriever(BaseRetriever):
         # Gather unique page filenames in order
         filenames = list(OrderedDict.fromkeys(provider.chunk_to_page.values()))
         self.page_ids = [Path(fn).stem for fn in filenames]
-        image_dir = Path(image_dir)
+        image_dir = Path("vqa-ir-qa/data/pages")
 
         # Load ColPali model & processor
         self.model = ColPali.from_pretrained(
