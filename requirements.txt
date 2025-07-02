@@ -12,6 +12,7 @@ matplotlib
 datasets
 unstructured[image]
 pytrec-eval==0.5
+ir_measures==0.3.7
 faiss-cpu
 pylate
 sparsembed

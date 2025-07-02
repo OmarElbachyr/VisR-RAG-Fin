@@ -19,7 +19,7 @@ class SpladeRetriever(BaseRetriever):
         self,
         provider: DocumentProvider,
         model_name: str = "naver/splade-v3",
-        device: str = "cuda" if torch.cuda.is_available() else "cpu",
+        device_map: str = "cuda" if torch.cuda.is_available() else "cpu",
         batch_size: int = 16,
         k_tokens_index: int = 256,
     ) -> None:
@@ -29,13 +29,13 @@ class SpladeRetriever(BaseRetriever):
 
         # load tokenizer + MLM
         tokenizer = AutoTokenizer.from_pretrained(model_name)
-        mlm = AutoModelForMaskedLM.from_pretrained(model_name).to(device)
+        mlm = AutoModelForMaskedLM.from_pretrained(model_name).to(device_map)
 
         # wrap in SPLADE model
         splade_model = splade_model_module.Splade(
             model=mlm,
             tokenizer=tokenizer,
-            device=device
+            device=device_map
         )
 
         # build simple docs list from provider

@@ -39,4 +39,3 @@ class BM25Retriever(BaseRetriever):
                 page_scores.setdefault(str(page), []).append(score)
             run[qid] = {p: self._aggregate_scores(vals, agg) for p, vals in page_scores.items()}
         return run
-

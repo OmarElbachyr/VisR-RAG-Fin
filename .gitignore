@@ -32,7 +32,5 @@ chunks_images
 indexes/
 test_scripts
 learn
-data/indexed_pages
-data/all_pages
-data/noise_pages
-data/indexed_pdfs
+data/
+!/data/pages 

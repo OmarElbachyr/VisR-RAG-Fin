@@ -1,0 +1,30 @@
+Provider Stats:
+{'unique_pages': 1000, 'total_chunks': 7446, 'unique_queries': 2986}
+================================================================================
+
+
+Testing openai/clip-vit-base-patch32...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.0519  P:0.0519  R:0.0519
+K=3   NDCG:0.0790  P:0.0329  R:0.0986
+K=5   NDCG:0.0934  P:0.0269  R:0.1340
+K=10  NDCG:0.1115  P:0.0191  R:0.1904
+GLOBAL MRR:0.0977  Rprec:0.0519
+Indexing time: 23.0800s
+Retrieval time: 1.4809s
+--------------------------------------------------------------------------------
+
+Testing google/siglip-base-patch16-224...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.1018  P:0.1018  R:0.1015
+K=3   NDCG:0.1497  P:0.0622  R:0.1859
+K=5   NDCG:0.1684  P:0.0465  R:0.2317
+K=10  NDCG:0.1953  P:0.0316  R:0.3153
+GLOBAL MRR:0.1723  Rprec:0.1018
+Indexing time: 21.0883s
+Retrieval time: 2.2934s
+--------------------------------------------------------------------------------
