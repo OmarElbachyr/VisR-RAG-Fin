@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.abspath("/home/omar/projects/vqa-ir-qa/src"))
+sys.path.append(os.path.abspath("/home/laura/vqa-ir-qa/src"))
 
 from retrievers.colpali import ColPaliRetriever
 from evaluation.document_provider import DocumentProvider

@@ -2,7 +2,7 @@ import json
 import time
 import sys 
 import os 
-sys.path.append(os.path.abspath("/home/omar/projects/vqa-ir-qa/src"))
+sys.path.append(os.path.abspath("/home/laura/vqa-ir-qa/src"))
 from retrievers.bm25 import BM25Retriever
 from retrievers.sentence_transformer import SentenceTransformerRetriever
 from retrievers.colbert import ColBERTRetriever
@@ -43,9 +43,9 @@ def test_retriever(retriever_class, provider, queries, qrels, results, agg="max"
     }
 
 if __name__ == "__main__":
-    csv_path = "src/dataset/chunks/chunked_pages.csv"
+    csv_path = "/home/laura/vqa-ir-qa/src/dataset/chunks/chunked_pages.csv"
     image_dir = "data/pages"
-    results_path = "src/results/retriever_results_annotated.json"
+    results_path = "results/retriever_results_annotated.json"
 
     provider = DocumentProvider(csv_path, use_nltk_preprocessor=True)
     print(provider.stats)
