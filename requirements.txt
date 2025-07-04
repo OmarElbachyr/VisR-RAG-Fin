@@ -1,22 +1,21 @@
 # git+https://github.com/illuin-tech/colpali
 colpali-engine==0.3.10
 transformers==4.51.3
-flash-attn
+# flash-attn
 rank-bm25==0.2.2
 nltk
-sentence-transformers
+sentence-transformers # this was 3.0.1
 pytesseract
 pymupdf
 pillow
 matplotlib
 datasets
 unstructured[image]
-pytrec-eval==0.5
-ir_measures==0.3.7
+ir-measures[ranx]
 faiss-cpu
 pylate
 sparsembed
-torch>=2.5,<2.7
+torch
 torchvision
 bitsandbytes
 sentencepiece
