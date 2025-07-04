@@ -1,8 +1,5 @@
-import os
-import sys
-sys.path.append(os.path.abspath("/home/omar/projects/vqa-ir-qa/src"))
 
-from retrievers.siglip import SigLIPRetriever
+from retrievers.biqwen2_5 import BiQwen2_5Retriever
 from evaluation.document_provider import DocumentProvider
 from evaluation.query_qrel_builder import QueryQrelsBuilder
 
@@ -21,16 +18,15 @@ if __name__ == "__main__":
     provider = DocumentProvider(csv_path)
     print(provider.stats)
     queries, qrels = QueryQrelsBuilder(csv_path).build()
-    
-    model_name = "Alibaba-NLP/gme-Qwen2-VL-7B-Instruct" 
-    siglip = SigLIPRetriever(
-        provider,
+    model_name = 'nomic-ai/nomic-embed-multimodal-7b'
+    retriever = BiQwen2_5Retriever(
+        provider=provider,
         image_dir=image_dir,
         model_name=model_name,
-        device_map="cuda",
-        batch_size=16
+        device_map="cuda",        
+        batch_size=16,            # for image-embedding
     )
-    run = siglip.search(queries, batch_size=8)
+    run = retriever.search(queries, batch_size=8)
     
-    print(f"\n=== SigLIP ({model_name}) Results ===")
-    metrics = siglip.evaluate(run, qrels, k_values, verbose=True, eval_lib=eval_lib)
+    print(f"\n=== BiQwen2.5 ({model_name}) Results ===")
+    metrics = retriever.evaluate(run, qrels, k_values, verbose=True, eval_lib=eval_lib)

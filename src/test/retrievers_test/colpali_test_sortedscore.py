@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.abspath("/home/laura/vqa-ir-qa/src"))
+sys.path.append(os.path.abspath("/home/omar/projects/vqa-ir-qa/src"))
 import json
 from collections import OrderedDict
 from retrievers.colpali import ColPaliRetriever
@@ -9,7 +9,7 @@ from evaluation.query_qrel_builder import QueryQrelsBuilder
 import pprint
 
 if __name__ == "__main__":
-    csv_path = "/home/laura/vqa-ir-qa/src/dataset/chunks/chunked_pages.csv"
+    csv_path = "src/dataset/chunks/chunked_pages.csv"
     k_values = [1, 3, 5, 10]
     image_dir = "data/pages"
     provider = DocumentProvider(csv_path)
@@ -30,9 +30,9 @@ if __name__ == "__main__":
         sorted_scores = OrderedDict(sorted(scores.items(), key=lambda item: item[1], reverse=True))
         question_string = queries.get(query, query) 
         sorted_data[question_string] = sorted_scores
-    pprint.pprint(sorted_data)
+    # pprint.pprint(sorted_data)
 
-    with open('/home/laura/vqa-ir-qa/data/sorted_scores_colipali.json', 'w') as f:
+    with open('data/sorted_scores_colipali.json', 'w') as f:
         json.dump(sorted_data, f, indent=4)
 
     metrics = colpali.evaluate(sorted_data, qrels, k_values, verbose=True)

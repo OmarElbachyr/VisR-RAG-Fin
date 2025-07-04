@@ -1,7 +1,3 @@
-import sys 
-import os 
-sys.path.append(os.path.abspath("/home/omar/projects/vqa-ir-qa/src"))
-
 from retrievers.bm25 import BM25Retriever
 from evaluation.document_provider import DocumentProvider
 from evaluation.query_qrel_builder import QueryQrelsBuilder
@@ -19,7 +15,7 @@ if __name__ == "__main__":
     k_values = [1, 3, 5, 10]
     eval_lib = 'ir_measures'  # 'ir_measures', 'pytrec_eval'
 
-    provider = DocumentProvider(csv_path)
+    provider = DocumentProvider(csv_path, use_nltk_preprocessor=True)
     print(provider.stats)
     queries, qrels = QueryQrelsBuilder(csv_path).build()
 

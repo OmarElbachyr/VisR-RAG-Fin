@@ -1,8 +1,4 @@
-import os
-import sys
-sys.path.append(os.path.abspath("/home/omar/projects/vqa-ir-qa/src"))
-
-from retrievers.siglip import SigLIPRetriever
+from retrievers.gme_qwen2vl import GmeQwen2VL7BRetriever
 from evaluation.document_provider import DocumentProvider
 from evaluation.query_qrel_builder import QueryQrelsBuilder
 
@@ -22,15 +18,15 @@ if __name__ == "__main__":
     print(provider.stats)
     queries, qrels = QueryQrelsBuilder(csv_path).build()
     
-    model_name = "Alibaba-NLP/gme-Qwen2-VL-7B-Instruct" 
-    siglip = SigLIPRetriever(
+    model_name = "jinaai/jina-embeddings-v4" # "Alibaba-NLP/gme-Qwen2-VL-7B-Instruct" 
+    retriever = GmeQwen2VL7BRetriever(
         provider,
         image_dir=image_dir,
         model_name=model_name,
         device_map="cuda",
-        batch_size=16
+        batch_size=8
     )
-    run = siglip.search(queries, batch_size=8)
+    run = retriever.search(queries, batch_size=8)
     
-    print(f"\n=== SigLIP ({model_name}) Results ===")
-    metrics = siglip.evaluate(run, qrels, k_values, verbose=True, eval_lib=eval_lib)
+    print(f"\n=== gme-Qwen2 ({model_name}) Results ===")
+    metrics = retriever.evaluate(run, qrels, k_values, verbose=True, eval_lib=eval_lib)

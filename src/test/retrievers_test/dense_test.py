@@ -1,15 +1,10 @@
-import os
-import sys
-
-sys.path.append(os.path.abspath("/home/omar/projects/vqa-ir-qa/src"))
-
 from retrievers.sentence_transformer import SentenceTransformerRetriever
 from evaluation.query_qrel_builder import QueryQrelsBuilder
 from evaluation.document_provider import DocumentProvider
 
 
 if __name__ == "__main__":
-    data_option = "all_pages"  # Set to "annotated_pages" for annotated data, "all_pages" for all sampled data
+    data_option = "annotated_pages"  # Set to "annotated_pages" for annotated data, "all_pages" for all sampled data
 
     if data_option == "annotated_pages":
         csv_path = "src/dataset/chunks/chunked_pages.csv"
