@@ -17,7 +17,8 @@ class BM25Retriever(BaseRetriever):
         self.bm25 = BM25Okapi(provider.tokens)
         self.chunk_to_page = provider.chunk_to_page
 
-    def _aggregate_scores(cls, vals: list[float], agg: Literal["max", "mean", "sum"]) -> float:
+    @staticmethod
+    def _aggregate_scores(vals: list[float], agg: Literal["max", "mean", "sum"]) -> float:
         if agg == "max":
             return float(max(vals))
         elif agg == "sum":
@@ -37,5 +38,5 @@ class BM25Retriever(BaseRetriever):
                 if page is None:
                     continue
                 page_scores.setdefault(str(page), []).append(score)
-            run[qid] = {p: self._aggregate_scores(vals, agg) for p, vals in page_scores.items()}
+            run[qid] = {p: BM25Retriever._aggregate_scores(vals, agg) for p, vals in page_scores.items()}
         return run

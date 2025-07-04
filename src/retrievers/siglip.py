@@ -35,6 +35,7 @@ class SigLIPRetriever(BaseRetriever):
         self.model = AutoModel.from_pretrained(
             model_name,
             device_map=device_map,
+            trust_remote_code=True,
         ).eval()
 
         self.processor = AutoProcessor.from_pretrained(model_name)

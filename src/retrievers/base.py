@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Dict
-from src.evaluation.pytrec_evaluator import PyTrecEvaluator
-from src.evaluation.ir_evaluator import IrMeasuresEvaluator
+# from evaluation.pytrec_evaluator import PyTrecEvaluator
+from evaluation.ir_evaluator import IrMeasuresEvaluator
 
 class BaseRetriever(ABC):
     def __init__(self):
-        self.pytrec_evaluator = PyTrecEvaluator()
+        # self.pytrec_evaluator = PyTrecEvaluator()
         self.ir_evaluator = IrMeasuresEvaluator()
     
     @abstractmethod
@@ -29,7 +29,8 @@ class BaseRetriever(ABC):
             Evaluation metrics for different k values
         """
         if eval_lib == 'pytrec_eval':
-            return self.pytrec_evaluator.evaluate(run, qrels, k_values, verbose)
+            pass
+            # return self.pytrec_evaluator.evaluate(run, qrels, k_values, verbose)
         elif eval_lib == 'ir_measures':
             return self.ir_evaluator.evaluate(run, qrels, k_values, verbose)
         else:
