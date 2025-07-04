@@ -32,8 +32,9 @@
                     "rprec": 0.2757870060281313
                 }
             },
-            "indexing_time": 2.080725908279419,
-            "retrieval_time": 63.154640913009644
+            "indexing_time": 2.082211971282959,
+            "retrieval_time": 63.67380499839783,
+            "sorted_run_path": "data/retrieved_pages/all_pages/BM25Retriever_sorted_run.json"
         },
         "BAAI/bge-m3": {
             "metrics": {
@@ -62,8 +63,9 @@
                     "rprec": 0.42833221701272606
                 }
             },
-            "indexing_time": 66.28537583351135,
-            "retrieval_time": 62.64995503425598
+            "indexing_time": 69.76339292526245,
+            "retrieval_time": 59.00479054450989,
+            "sorted_run_path": "data/retrieved_pages/all_pages/BAAI_bge-m3_sorted_run.json"
         },
         "intfloat/multilingual-e5-large": {
             "metrics": {
@@ -92,8 +94,9 @@
                     "rprec": 0.424146014735432
                 }
             },
-            "indexing_time": 68.84771418571472,
-            "retrieval_time": 61.03242754936218
+            "indexing_time": 68.79943132400513,
+            "retrieval_time": 55.636842250823975,
+            "sorted_run_path": "data/retrieved_pages/all_pages/intfloat_multilingual-e5-large_sorted_run.json"
         },
         "intfloat/multilingual-e5-large-instruct": {
             "metrics": {
@@ -122,38 +125,40 @@
                     "rprec": 0.4048894842598794
                 }
             },
-            "indexing_time": 70.03549909591675,
-            "retrieval_time": 59.00958323478699
+            "indexing_time": 68.79393243789673,
+            "retrieval_time": 70.19354629516602,
+            "sorted_run_path": "data/retrieved_pages/all_pages/intfloat_multilingual-e5-large-instruct_sorted_run.json"
         },
         "colbert-ir/colbertv2.0": {
             "metrics": {
                 "1": {
-                    "ndcg": 0.485934360348292,
-                    "precision": 0.485934360348292,
-                    "recall": 0.4850971198928332
+                    "ndcg": 0.485264567983925,
+                    "precision": 0.485264567983925,
+                    "recall": 0.4844273275284662
                 },
                 "3": {
-                    "ndcg": 0.5994223422447229,
-                    "precision": 0.22672471533824748,
-                    "recall": 0.6784996651038178
+                    "ndcg": 0.5985412539146586,
+                    "precision": 0.2263898191560639,
+                    "recall": 0.6774949765572672
                 },
                 "5": {
-                    "ndcg": 0.6261562200285407,
+                    "ndcg": 0.6256931510967957,
                     "precision": 0.14909578030809892,
                     "recall": 0.743636972538513
                 },
                 "10": {
-                    "ndcg": 0.6502063396768245,
-                    "precision": 0.08194909578030489,
-                    "recall": 0.8174815807099799
+                    "ndcg": 0.6494875297359198,
+                    "precision": 0.08188211654386819,
+                    "recall": 0.8168117883456129
                 },
                 "global": {
-                    "mrr": 0.6029589631722367,
-                    "rprec": 0.48576691225720026
+                    "mrr": 0.6021886672555655,
+                    "rprec": 0.4850971198928332
                 }
             },
-            "indexing_time": 48.78402495384216,
-            "retrieval_time": 177.44913578033447
+            "indexing_time": 48.85826897621155,
+            "retrieval_time": 177.99191308021545,
+            "sorted_run_path": "data/retrieved_pages/all_pages/colbert-ir_colbertv2.0_sorted_run.json"
         },
         "naver/splade-v3": {
             "metrics": {
@@ -182,8 +187,9 @@
                     "rprec": 0.4651707970529136
                 }
             },
-            "indexing_time": 46.68316841125488,
-            "retrieval_time": 2.0636508464813232
+            "indexing_time": 45.16123843193054,
+            "retrieval_time": 2.035479784011841,
+            "sorted_run_path": "data/retrieved_pages/all_pages/naver_splade-v3_sorted_run.json"
         }
     }
 }

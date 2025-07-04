@@ -1,0 +1,46 @@
+Provider Stats:
+{'unique_pages': 104, 'total_chunks': 804, 'unique_queries': 308}
+================================================================================
+
+
+Testing BM25Retriever...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.5162  P:0.5162  R:0.5162
+K=3   NDCG:0.6393  P:0.2413  R:0.7240
+K=5   NDCG:0.6753  P:0.1623  R:0.8117
+K=10  NDCG:0.7009  P:0.0890  R:0.8896
+GLOBAL MRR:0.6455  Rprec:0.5162
+Indexing time: 0.2169s
+Retrieval time: 0.5474s
+Sorted run saved to: data/retrieved_pages/annotated_pages/BM25Retriever_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing BAAI/bge-m3...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.7143  P:0.7143  R:0.7143
+K=3   NDCG:0.7976  P:0.2857  R:0.8571
+K=5   NDCG:0.8148  P:0.1799  R:0.8994
+K=10  NDCG:0.8253  P:0.0932  R:0.9318
+GLOBAL MRR:0.7928  Rprec:0.7143
+Indexing time: 9.3301s
+Retrieval time: 2.8792s
+Sorted run saved to: data/retrieved_pages/annotated_pages/BAAI_bge-m3_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing intfloat/multilingual-e5-large...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.6721  P:0.6721  R:0.6721
+K=3   NDCG:0.7857  P:0.2879  R:0.8636
+K=5   NDCG:0.8030  P:0.1812  R:0.9058
+K=10  NDCG:0.8160  P:0.0945  R:0.9448
+GLOBAL MRR:0.7764  Rprec:0.6721
+Indexing time: 8.8765s
+Retrieval time: 5.3502s
+Sorted run saved to: data/retrieved_pages/annotated_pages/intfloat_multilingual-e5-large_sorted_run.json
+--------------------------------------------------------------------------------

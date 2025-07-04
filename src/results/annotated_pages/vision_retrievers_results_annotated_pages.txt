@@ -1,0 +1,74 @@
+Provider Stats:
+{'unique_pages': 104, 'total_chunks': 804, 'unique_queries': 308}
+================================================================================
+
+
+Testing openai/clip-vit-base-patch32...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.1461  P:0.1461  R:0.1461
+K=3   NDCG:0.2135  P:0.0877  R:0.2630
+K=5   NDCG:0.2402  P:0.0656  R:0.3279
+K=10  NDCG:0.2778  P:0.0445  R:0.4448
+GLOBAL MRR:0.2460  Rprec:0.1461
+Indexing time: 3.7436s
+Retrieval time: 0.1370s
+Sorted run saved to: data/retrieved_pages/annotated_pages/openai_clip-vit-base-patch32_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing google/siglip-base-patch16-224...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.2825  P:0.2825  R:0.2825
+K=3   NDCG:0.3707  P:0.1439  R:0.4318
+K=5   NDCG:0.4115  P:0.1065  R:0.5325
+K=10  NDCG:0.4513  P:0.0656  R:0.6558
+GLOBAL MRR:0.4030  Rprec:0.2825
+Indexing time: 3.6420s
+Retrieval time: 0.2288s
+Sorted run saved to: data/retrieved_pages/annotated_pages/google_siglip-base-patch16-224_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing nomic-ai/nomic-embed-multimodal-3b...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.8896  P:0.8896  R:0.8896
+K=3   NDCG:0.9452  P:0.3279  R:0.9838
+K=5   NDCG:0.9478  P:0.1981  R:0.9903
+K=10  NDCG:0.9510  P:0.1000  R:1.0000
+GLOBAL MRR:0.9346  Rprec:0.8896
+Indexing time: 72.2974s
+Retrieval time: 1.1547s
+Sorted run saved to: data/retrieved_pages/annotated_pages/nomic-ai_nomic-embed-multimodal-3b_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing nomic-ai/nomic-embed-multimodal-7b...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.8896  P:0.8896  R:0.8896
+K=3   NDCG:0.9489  P:0.3290  R:0.9870
+K=5   NDCG:0.9503  P:0.1981  R:0.9903
+K=10  NDCG:0.9535  P:0.1000  R:1.0000
+GLOBAL MRR:0.9377  Rprec:0.8896
+Indexing time: 78.7381s
+Retrieval time: 2.2417s
+Sorted run saved to: data/retrieved_pages/annotated_pages/nomic-ai_nomic-embed-multimodal-7b_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing Alibaba-NLP/gme-Qwen2-VL-7B-Instruct...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.8896  P:0.8896  R:0.8896
+K=3   NDCG:0.9522  P:0.3312  R:0.9935
+K=5   NDCG:0.9536  P:0.1994  R:0.9968
+K=10  NDCG:0.9546  P:0.1000  R:1.0000
+GLOBAL MRR:0.9389  Rprec:0.8896
+Indexing time: 120.3542s
+Retrieval time: 2.4827s
+Sorted run saved to: data/retrieved_pages/annotated_pages/Alibaba-NLP_gme-Qwen2-VL-7B-Instruct_sorted_run.json
+--------------------------------------------------------------------------------

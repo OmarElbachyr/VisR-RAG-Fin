@@ -1,0 +1,195 @@
+{
+    "docs_stats": {
+        "unique_pages": 104,
+        "total_chunks": 804,
+        "unique_queries": 308
+    },
+    "models": {
+        "BM25Retriever": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.5162337662337663,
+                    "precision": 0.5162337662337663,
+                    "recall": 0.5162337662337663
+                },
+                "3": {
+                    "ndcg": 0.6392592172425824,
+                    "precision": 0.2413419913419914,
+                    "recall": 0.724025974025974
+                },
+                "5": {
+                    "ndcg": 0.6753059122358142,
+                    "precision": 0.1623376623376629,
+                    "recall": 0.8116883116883117
+                },
+                "10": {
+                    "ndcg": 0.7009041952933739,
+                    "precision": 0.08896103896103935,
+                    "recall": 0.8896103896103896
+                },
+                "global": {
+                    "mrr": 0.6455498027502897,
+                    "rprec": 0.5162337662337663
+                }
+            },
+            "indexing_time": 0.2163233757019043,
+            "retrieval_time": 0.5406200885772705,
+            "sorted_run_path": "data/retrieved_pages/BM25Retriever_sorted_run.json"
+        },
+        "BAAI/bge-m3": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.7142857142857143,
+                    "precision": 0.7142857142857143,
+                    "recall": 0.7142857142857143
+                },
+                "3": {
+                    "ndcg": 0.7976169905844178,
+                    "precision": 0.28571428571428514,
+                    "recall": 0.8571428571428571
+                },
+                "5": {
+                    "ndcg": 0.8147989029191002,
+                    "precision": 0.17987012987013068,
+                    "recall": 0.8993506493506493
+                },
+                "10": {
+                    "ndcg": 0.8252889767786462,
+                    "precision": 0.09318181818181863,
+                    "recall": 0.9318181818181818
+                },
+                "global": {
+                    "mrr": 0.7928037986852676,
+                    "rprec": 0.7142857142857143
+                }
+            },
+            "indexing_time": 9.849658250808716,
+            "retrieval_time": 3.016972780227661,
+            "sorted_run_path": "data/retrieved_pages/BAAI_bge-m3_sorted_run.json"
+        },
+        "intfloat/multilingual-e5-large": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.672077922077922,
+                    "precision": 0.672077922077922,
+                    "recall": 0.672077922077922
+                },
+                "3": {
+                    "ndcg": 0.7857112001623409,
+                    "precision": 0.2878787878787873,
+                    "recall": 0.8636363636363636
+                },
+                "5": {
+                    "ndcg": 0.8030353974023441,
+                    "precision": 0.18116883116883198,
+                    "recall": 0.9058441558441559
+                },
+                "10": {
+                    "ndcg": 0.8159662832919934,
+                    "precision": 0.09448051948051994,
+                    "recall": 0.9448051948051948
+                },
+                "global": {
+                    "mrr": 0.776402982532964,
+                    "rprec": 0.672077922077922
+                }
+            },
+            "indexing_time": 8.928318500518799,
+            "retrieval_time": 3.1151490211486816,
+            "sorted_run_path": "data/retrieved_pages/intfloat_multilingual-e5-large_sorted_run.json"
+        },
+        "intfloat/multilingual-e5-large-instruct": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.698051948051948,
+                    "precision": 0.698051948051948,
+                    "recall": 0.698051948051948
+                },
+                "3": {
+                    "ndcg": 0.7896541270408192,
+                    "precision": 0.28354978354978305,
+                    "recall": 0.8506493506493507
+                },
+                "5": {
+                    "ndcg": 0.8043240081596927,
+                    "precision": 0.17727272727272803,
+                    "recall": 0.8863636363636364
+                },
+                "10": {
+                    "ndcg": 0.8203432537410617,
+                    "precision": 0.09350649350649395,
+                    "recall": 0.935064935064935
+                },
+                "global": {
+                    "mrr": 0.7860677807187559,
+                    "rprec": 0.698051948051948
+                }
+            },
+            "indexing_time": 9.251244306564331,
+            "retrieval_time": 3.0737645626068115,
+            "sorted_run_path": "data/retrieved_pages/intfloat_multilingual-e5-large-instruct_sorted_run.json"
+        },
+        "colbert-ir/colbertv2.0": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.7305194805194806,
+                    "precision": 0.7305194805194806,
+                    "recall": 0.7305194805194806
+                },
+                "3": {
+                    "ndcg": 0.8152030564123406,
+                    "precision": 0.29004329004328944,
+                    "recall": 0.8701298701298701
+                },
+                "5": {
+                    "ndcg": 0.8342101239762111,
+                    "precision": 0.18311688311688396,
+                    "recall": 0.9155844155844156
+                },
+                "10": {
+                    "ndcg": 0.8492796994220485,
+                    "precision": 0.0961038961038966,
+                    "recall": 0.961038961038961
+                },
+                "global": {
+                    "mrr": 0.8144838806527117,
+                    "rprec": 0.7305194805194806
+                }
+            },
+            "indexing_time": 4.815340995788574,
+            "retrieval_time": 16.780029296875,
+            "sorted_run_path": "data/retrieved_pages/colbert-ir_colbertv2.0_sorted_run.json"
+        },
+        "naver/splade-v3": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.7272727272727273,
+                    "precision": 0.7272727272727273,
+                    "recall": 0.7272727272727273
+                },
+                "3": {
+                    "ndcg": 0.8289632528177205,
+                    "precision": 0.3008658008658001,
+                    "recall": 0.9025974025974026
+                },
+                "5": {
+                    "ndcg": 0.8453160042604615,
+                    "precision": 0.18831168831168923,
+                    "recall": 0.9415584415584416
+                },
+                "10": {
+                    "ndcg": 0.851546536950876,
+                    "precision": 0.0961038961038966,
+                    "recall": 0.961038961038961
+                },
+                "global": {
+                    "mrr": 0.8165579640417306,
+                    "rprec": 0.7272727272727273
+                }
+            },
+            "indexing_time": 4.782517433166504,
+            "retrieval_time": 0.16196131706237793,
+            "sorted_run_path": "data/retrieved_pages/naver_splade-v3_sorted_run.json"
+        }
+    }
+}
