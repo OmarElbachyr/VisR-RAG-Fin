@@ -32,5 +32,6 @@ chunks_images
 indexes/
 test_scripts
 learn
-data/
+data/*
 !/data/pages 
+!data/retrieved_pages

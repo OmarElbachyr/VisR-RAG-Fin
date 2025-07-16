@@ -32,8 +32,9 @@
                     "rprec": 0.8441558441558441
                 }
             },
-            "indexing_time": 17.166284561157227,
-            "retrieval_time": 1.2785484790802002
+            "indexing_time": 18.29353618621826,
+            "retrieval_time": 1.2731692790985107,
+            "sorted_run_path": "data/retrieved_pages/annotated_pages/vidore_colpali-v1.3_sorted_run.json"
         },
         "vidore/colqwen2-v1.0": {
             "metrics": {
@@ -43,87 +44,90 @@
                     "recall": 0.8961038961038961
                 },
                 "3": {
-                    "ndcg": 0.9504854702110409,
+                    "ndcg": 0.9500603736085363,
                     "precision": 0.32900432900432786,
                     "recall": 0.987012987012987
                 },
                 "5": {
-                    "ndcg": 0.954538086845396,
+                    "ndcg": 0.9541129902428912,
                     "precision": 0.19935064935065044,
                     "recall": 0.9967532467532467
                 },
                 "10": {
-                    "ndcg": 0.955620337927647,
+                    "ndcg": 0.9551952413251424,
                     "precision": 0.10000000000000055,
                     "recall": 1.0
                 },
                 "global": {
-                    "mrr": 0.9405071119356834,
+                    "mrr": 0.9399659863945578,
                     "rprec": 0.8961038961038961
                 }
             },
-            "indexing_time": 67.2182035446167,
-            "retrieval_time": 0.8319747447967529
+            "indexing_time": 22.09296441078186,
+            "retrieval_time": 0.9494156837463379,
+            "sorted_run_path": "data/retrieved_pages/annotated_pages/vidore_colqwen2-v1.0_sorted_run.json"
         },
         "vidore/colqwen2.5-v0.2": {
             "metrics": {
                 "1": {
-                    "ndcg": 0.9025974025974026,
-                    "precision": 0.9025974025974026,
-                    "recall": 0.9025974025974026
+                    "ndcg": 0.8896103896103896,
+                    "precision": 0.8896103896103896,
+                    "recall": 0.8896103896103896
                 },
                 "3": {
-                    "ndcg": 0.9550075132653085,
+                    "ndcg": 0.9489391033743065,
                     "precision": 0.32900432900432786,
                     "recall": 0.987012987012987
                 },
                 "5": {
-                    "ndcg": 0.956405813778534,
-                    "precision": 0.19805194805194912,
-                    "recall": 0.9902597402597403
+                    "ndcg": 0.9515934194954363,
+                    "precision": 0.19870129870129977,
+                    "recall": 0.9935064935064936
                 },
                 "10": {
-                    "ndcg": 0.9585008527831634,
+                    "ndcg": 0.9525319416588058,
                     "precision": 0.09967532467532522,
                     "recall": 0.9967532467532467
                 },
                 "global": {
-                    "mrr": 0.9455914183855358,
-                    "rprec": 0.9025974025974026
+                    "mrr": 0.9376082251082251,
+                    "rprec": 0.8896103896103896
                 }
             },
-            "indexing_time": 74.18789196014404,
-            "retrieval_time": 1.3113389015197754
+            "indexing_time": 26.382145404815674,
+            "retrieval_time": 1.3771567344665527,
+            "sorted_run_path": "data/retrieved_pages/annotated_pages/vidore_colqwen2.5-v0.2_sorted_run.json"
         },
         "nomic-ai/colnomic-embed-multimodal-3b": {
             "metrics": {
                 "1": {
-                    "ndcg": 0.922077922077922,
-                    "precision": 0.922077922077922,
-                    "recall": 0.922077922077922
+                    "ndcg": 0.9318181818181818,
+                    "precision": 0.9318181818181818,
+                    "recall": 0.9318181818181818
                 },
                 "3": {
-                    "ndcg": 0.9683426130681838,
+                    "ndcg": 0.9719374531307996,
                     "precision": 0.332251082251081,
                     "recall": 0.9967532467532467
                 },
                 "5": {
-                    "ndcg": 0.9683426130681838,
+                    "ndcg": 0.9719374531307996,
                     "precision": 0.19935064935065044,
                     "recall": 0.9967532467532467
                 },
                 "10": {
-                    "ndcg": 0.9694991299094438,
+                    "ndcg": 0.9730939699720593,
                     "precision": 0.10000000000000055,
                     "recall": 1.0
                 },
                 "global": {
-                    "mrr": 0.9588744588744588,
-                    "rprec": 0.922077922077922
+                    "mrr": 0.9637445887445887,
+                    "rprec": 0.9318181818181818
                 }
             },
-            "indexing_time": 112.22380709648132,
-            "retrieval_time": 1.4967186450958252
+            "indexing_time": 34.51641869544983,
+            "retrieval_time": 1.4502179622650146,
+            "sorted_run_path": "data/retrieved_pages/annotated_pages/nomic-ai_colnomic-embed-multimodal-3b_sorted_run.json"
         },
         "nomic-ai/colnomic-embed-multimodal-7b": {
             "metrics": {
@@ -133,57 +137,59 @@
                     "recall": 0.9090909090909091
                 },
                 "3": {
-                    "ndcg": 0.9581772567254192,
+                    "ndcg": 0.9586023533279241,
                     "precision": 0.33008658008657893,
                     "recall": 0.9902597402597403
                 },
                 "5": {
-                    "ndcg": 0.9595755572386445,
+                    "ndcg": 0.9600006538411492,
                     "precision": 0.19870129870129977,
                     "recall": 0.9935064935064936
                 },
                 "10": {
-                    "ndcg": 0.9606578083208956,
+                    "ndcg": 0.9610829049234002,
                     "precision": 0.09967532467532522,
                     "recall": 0.9967532467532467
                 },
                 "global": {
-                    "mrr": 0.9483611626468769,
+                    "mrr": 0.9489065828351542,
                     "rprec": 0.9090909090909091
                 }
             },
-            "indexing_time": 58.78641080856323,
-            "retrieval_time": 2.63301157951355
+            "indexing_time": 36.113646030426025,
+            "retrieval_time": 2.2835700511932373,
+            "sorted_run_path": "data/retrieved_pages/annotated_pages/nomic-ai_colnomic-embed-multimodal-7b_sorted_run.json"
         },
         "vidore/colSmol-500M": {
             "metrics": {
                 "1": {
-                    "ndcg": 0.8896103896103896,
-                    "precision": 0.8896103896103896,
-                    "recall": 0.8896103896103896
+                    "ndcg": 0.8798701298701299,
+                    "precision": 0.8798701298701299,
+                    "recall": 0.8798701298701299
                 },
                 "3": {
-                    "ndcg": 0.9485140067718018,
+                    "ndcg": 0.9444940701066814,
                     "precision": 0.32900432900432786,
                     "recall": 0.987012987012987
                 },
                 "5": {
-                    "ndcg": 0.9527089083114777,
+                    "ndcg": 0.9486889716463575,
                     "precision": 0.19935064935065044,
                     "recall": 0.9967532467532467
                 },
                 "10": {
-                    "ndcg": 0.9538654251527376,
+                    "ndcg": 0.9498454884876172,
                     "precision": 0.10000000000000055,
                     "recall": 1.0
                 },
                 "global": {
-                    "mrr": 0.9380411255411254,
-                    "rprec": 0.8896103896103896
+                    "mrr": 0.93262987012987,
+                    "rprec": 0.8798701298701299
                 }
             },
-            "indexing_time": 27.216012716293335,
-            "retrieval_time": 0.7520027160644531
+            "indexing_time": 32.24665427207947,
+            "retrieval_time": 0.862877607345581,
+            "sorted_run_path": "data/retrieved_pages/annotated_pages/vidore_colSmol-500M_sorted_run.json"
         },
         "vidore/colSmol-256M": {
             "metrics": {
@@ -193,27 +199,28 @@
                     "recall": 0.8831168831168831
                 },
                 "3": {
-                    "ndcg": 0.9478178331400773,
+                    "ndcg": 0.9473927365375725,
                     "precision": 0.32900432900432786,
                     "recall": 0.987012987012987
                 },
                 "5": {
-                    "ndcg": 0.9504721492612068,
+                    "ndcg": 0.950047052658702,
                     "precision": 0.19870129870129977,
                     "recall": 0.9935064935064936
                 },
                 "10": {
-                    "ndcg": 0.9524929225068276,
+                    "ndcg": 0.9520678259043228,
                     "precision": 0.10000000000000055,
                     "recall": 1.0
                 },
                 "global": {
-                    "mrr": 0.9362322201607916,
+                    "mrr": 0.9356910946196662,
                     "rprec": 0.8831168831168831
                 }
             },
-            "indexing_time": 25.555299520492554,
-            "retrieval_time": 0.6565394401550293
+            "indexing_time": 26.102566242218018,
+            "retrieval_time": 0.8124918937683105,
+            "sorted_run_path": "data/retrieved_pages/annotated_pages/vidore_colSmol-256M_sorted_run.json"
         }
     }
 }
