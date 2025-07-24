@@ -19,3 +19,6 @@ torch
 torchvision
 bitsandbytes
 sentencepiece
+ollama
+einops
+flash-attn

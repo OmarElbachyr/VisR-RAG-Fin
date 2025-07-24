@@ -76,7 +76,7 @@ def test_retriever(retriever_class, provider, queries, qrels, results, agg="max"
     }
 
 if __name__ == "__main__":
-    data_option = "all_pages"  # Set to "annotated_pages" for annotated data, "all_pages" for all sampled data
+    data_option = "annotated_pages"  # Set to "annotated_pages" for annotated data, "all_pages" for all sampled data
 
     if data_option == "annotated_pages":
         csv_path = "src/dataset/chunks/chunked_pages.csv"
