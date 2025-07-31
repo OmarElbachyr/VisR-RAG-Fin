@@ -1,0 +1,28 @@
+Image Compatibility Test Results
+Generated on: 2025-07-23 21:32:32
+Total entries loaded: 104
+Valid images found: 104
+
+============================================================
+IMAGE COMPATIBILITY TEST RESULTS
+============================================================
+
+qwen2.5vl:3b:
+  Compatible: 104/104 images (100.0%)
+  Dimension range: 1080x810 to 2495x1685
+  File size range: 77KB to 1958KB
+
+gemma3:4b-it-q4_K_M:
+  Compatible: 104/104 images (100.0%)
+  Dimension range: 1080x810 to 2495x1685
+  File size range: 77KB to 1958KB
+
+qwen2.5vl:7b:
+  Compatible: 104/104 images (100.0%)
+  Dimension range: 1080x810 to 2495x1685
+  File size range: 77KB to 1958KB
+
+gemma3:12b-it-q4_K_M:
+  Compatible: 104/104 images (100.0%)
+  Dimension range: 1080x810 to 2495x1685
+  File size range: 77KB to 1958KB

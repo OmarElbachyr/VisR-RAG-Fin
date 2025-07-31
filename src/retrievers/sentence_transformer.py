@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer
 
-from evaluation.document_provider import DocumentProvider
+from evaluation.classes.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
 
 def get_detailed_instruct(task_description: str, query: str) -> str:
@@ -21,11 +21,13 @@ class SentenceTransformerRetriever(BaseRetriever):
         device_map: str = "cuda" if torch.cuda.is_available() else "cpu",
         is_instruct: bool = False,
         task_description: str = "Given a user query, retrieve the most relevant passages from the document corpus",
+        batch_size: int = 32,
     ) -> None:
         super().__init__()
         self.model = SentenceTransformer(model_name, device=device_map)
         self.is_instruct = is_instruct
         self.task_description = task_description
+        self.batch_size = batch_size
 
         ids, embeds = provider.get("dense", encode_fn=self._encode)
         self.doc_ids: List[str] = ids
@@ -40,7 +42,7 @@ class SentenceTransformerRetriever(BaseRetriever):
     # ------------------------------------------------------------------
     def _encode(self, texts: List[str]) -> List[List[float]]:  # used by provider cache
         return (
-            self.model.encode(texts, batch_size=64, show_progress_bar=False, normalize_embeddings=True)
+            self.model.encode(texts, batch_size=self.batch_size, show_progress_bar=False, normalize_embeddings=True)
             .astype("float32")
             .tolist()
         )

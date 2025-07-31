@@ -8,7 +8,7 @@ import torch
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 from sparsembed import model as splade_model_module, retrieve as splade_retrieve
 
-from evaluation.document_provider import DocumentProvider
+from evaluation.classes.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
 
 

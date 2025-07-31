@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 # from evaluation.pytrec_evaluator import PyTrecEvaluator
-from evaluation.ir_evaluator import IrMeasuresEvaluator
+from evaluation.classes.ir_evaluator import IrMeasuresEvaluator
 
 class BaseRetriever(ABC):
     def __init__(self):

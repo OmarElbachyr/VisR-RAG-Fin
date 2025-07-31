@@ -34,4 +34,9 @@ test_scripts
 learn
 data/*
 !/data/pages 
-!data/retrieved_pages
+src/generators/results
+data/retrieved_pages
+/home/omar/projects/vqa-ir-qa/src/generators/baselines/results
+auto_annotate/results
+src/generators/baselines/results
+src/test/retrievers_test

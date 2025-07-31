@@ -3,14 +3,30 @@ import json
 import time
 import argparse
 import os
-from pathlib import Path
-import ollama
+from transformers import pipeline
+from PIL import Image
+import torch
+from dotenv import load_dotenv
+ 
+load_dotenv()
+HF_TOKEN = os.getenv('HF_TOKEN')
 
 
-class OllamaTopKGenerator:
-    def __init__(self, data_file, top_k=1):
+class HuggingFaceTopKGenerator:
+    def __init__(self, data_file, models, top_k=1):
         self.data_file = data_file
-        self.top_k = top_k  # Default top-k value
+        self.top_k = top_k
+        self.model_pipelines = { #FIXME:this code works with transformers==4.53.3 but could break colpali code that uses (4.51.3)  
+            model: pipeline(
+                task="image-text-to-text",
+                model=model,
+                device="cuda",
+                torch_dtype=torch.float16,
+                token=HF_TOKEN,
+                trust_remote_code=True,
+            )
+            for model in models
+        } 
         
     def load_data(self):
         with open(self.data_file, 'r', encoding='utf-8') as f:
@@ -23,38 +39,55 @@ class OllamaTopKGenerator:
     
     def query_model(self, model, question, images):
         start_time = time.time()
+        pipe = self.model_pipelines[model]
         try:
             image_count = len(images)
             
             prompt = f"""You are a financial analyst expert at analyzing financial docuemnts.
 
-You'll be given:
-• Question: "{question}"
-• Context: {image_count} PDF page images that may contain the answer
+    You'll be given:
+    • Question: "{question}"
+    • Context: {image_count} PDF page images that may contain the answer
 
-Instructions:
-1. Carefully examine all provided images for relevant information
-2. Answer the question using **only** information found in the images
-3. Be precise and concise in your response
-4. If the answer cannot be found in any of the images, respond exactly: "I don't know"
-5. Do not make assumptions or use external knowledge
-6. If information spans multiple images, synthesize it appropriately
+    Instructions:
+    1. Carefully examine all provided images for relevant information
+    2. Answer the question using **only** information found in the images
+    3. Be precise and concise in your response
+    4. If the answer cannot be found in any of the images, respond exactly: "I don't know"
+    5. Do not make assumptions or use external knowledge
+    6. If information spans multiple images, synthesize it appropriately
 
-Question: {question}"""
+    Question: {question}"""
+            
+            messages = [
+                {
+                    "role": "user",
+                    "content": (
+                        [{"type": "image"} for _ in images]
+                        + [{"type": "text", "text": prompt}]
+                    )
+                }
+            ]
 
-            response = ollama.chat(
-                model=model,
-                messages=[
-                    {'role': 'user', 
-                     'content': prompt, 
-                     'images': images
-                     }
-                ],
-                options={"temperature": 0.1}
-            )
+            with torch.inference_mode(), torch.autocast("cuda"):
+                output = pipe(text=messages, images=images, temperature=0.1, max_new_tokens=512)
+
+            # normalize whatever shape generated_text has
+            gen = output[0].get("generated_text", output[0])
+            if isinstance(gen, list):
+                last = gen[-1]
+                if isinstance(last, dict) and "content" in last:
+                    response = last["content"]
+                else:
+                    response = last
+            elif isinstance(gen, dict):
+                response = gen.get("content", gen.get("message", {}).get("content", str(gen)))
+            else:
+                response = gen
+
             return {
                 'success': True,
-                'response': response['message']['content'],
+                'response': response.strip() if isinstance(response, str) else str(response),
                 'time': time.time() - start_time
             }
         except Exception as e:
@@ -64,12 +97,13 @@ Question: {question}"""
                 'time': time.time() - start_time,
                 'error': str(e)
             }
-    
+
+
     def generate_answers(self, models, limit=None, output_dir="src/generators/results"):
         print(f"Testing models: {models}")
         
         data = self.load_data()
-        
+
         # Get sorted question keys and apply limit if specified
         question_keys = sorted([k for k in data.keys() if k.startswith('q')], 
                               key=lambda x: int(x[1:]))
@@ -91,7 +125,7 @@ Question: {question}"""
             if len(images) != self.top_k:
                 print(f"Not enough images for top-k (got {len(images)}, need {self.top_k}), skipping entry")
                 continue
-
+            
             for model in models:
                 print(f"  Model: {model}")
                 question = entry.get('query', '')
@@ -112,8 +146,8 @@ Question: {question}"""
                 
         # Save results - separate file for each model
         for model, model_results in results_by_model.items():
-            model_safe = model.replace(":", "-").replace(".", "-").replace("_", "-")
-            output_file = f"{output_dir}/ollama_top-k_{model_safe}.json"
+            model_safe = model.replace(":", "-").replace(".", "-").replace("/", "-").replace("_", "-")
+            output_file = f"{output_dir}/hf_top-k_{model_safe}.json"
             
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(model_results, f, indent=2, ensure_ascii=False)
@@ -145,24 +179,16 @@ def main():
 
     # Set default values in code (can still be overridden by command line)
     if not args.models:
-        args.models = ['gemma3:4b-it-q4_K_M', 'qwen2.5vl:3b',
-                       'qwen2.5vl:7b', 'gemma3:12b-it-q4_K_M',]
+        args.models =  ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf'] #, 'OpenGVLab/InternVL3-2B-hf']
     if not args.retrievers:
         args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b','nomic-ai/colnomic-embed-multimodal-7b']
 
     data_option = 'annotated_pages' # 'all_pages'
 
     if not args.limit:
-        args.limit = 10
-    
+        args.limit = None
+
     args.top_k = [1, 3]
-    
-    try:
-        ollama.list()
-        print("✓ Ollama connected")
-    except Exception as e:
-        print(f"✗ Ollama error: {e}")
-        return
 
     for top_k in args.top_k:
         print(f"\n=== Running for top_k: {top_k} ===")
@@ -171,7 +197,7 @@ def main():
             data_file = f'data/retrieved_pages/{data_option}/{retriever.replace("/", "_")}_sorted_run.json'
             retriever_subdir = os.path.join(args.output_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
             os.makedirs(retriever_subdir, exist_ok=True)
-            generator = OllamaTopKGenerator(data_file, top_k=top_k)
+            generator = HuggingFaceTopKGenerator(data_file, models=args.models, top_k=top_k)
             generator.generate_answers(args.models, args.limit, retriever_subdir)
 
 

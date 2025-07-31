@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 
 from colpali_engine.models import ColPali, ColPaliProcessor
-from evaluation.document_provider import DocumentProvider
+from evaluation.classes.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
 
 

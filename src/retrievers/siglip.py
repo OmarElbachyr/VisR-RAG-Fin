@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 from transformers import AutoProcessor, AutoModel, BitsAndBytesConfig
 
-from evaluation.document_provider import DocumentProvider
+from evaluation.classes.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
 
 

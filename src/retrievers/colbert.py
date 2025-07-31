@@ -5,7 +5,7 @@ from typing import Dict, List, Literal
 from pylate import models, indexes, retrieve
 import numpy as np
 
-from evaluation.document_provider import DocumentProvider
+from evaluation.classes.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
 import torch
 
@@ -57,13 +57,13 @@ class ColBERTRetriever(BaseRetriever):
         else:
             raise ValueError("Unsupported aggregation method.")
 
-    def search(self, queries: Dict[str, str], k: int = -1, agg: Literal["max", "mean", "sum"] = "max") -> Dict[str, Dict[str, float]]:
+    def search(self, queries: Dict[str, str], k: int = -1, agg: Literal["max", "mean", "sum"] = "max", batch_size=32) -> Dict[str, Dict[str, float]]:
         qids = list(queries.keys())
         qtexts = list(queries.values())
         qembs = self.model.encode(
             qtexts,
             device=self.device,
-            batch_size=32,
+            batch_size=batch_size,
             is_query=True,
             show_progress_bar=True,
         )

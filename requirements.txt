@@ -1,7 +1,6 @@
 # git+https://github.com/illuin-tech/colpali
 colpali-engine==0.3.10
-transformers==4.51.3
-# flash-attn
+transformers==4.51.3 # for HF models generation scripts e.g, 'src/generators/hf_models_topk.py' use verison 4.53.3
 rank-bm25==0.2.2
 nltk
 sentence-transformers # this was 3.0.1
@@ -21,4 +20,5 @@ bitsandbytes
 sentencepiece
 ollama
 einops
-flash-attn
+python-dotenv
+openai

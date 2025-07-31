@@ -4,10 +4,9 @@ from collections import OrderedDict
 
 import torch
 from PIL import Image
-from transformers.utils.import_utils import is_flash_attn_2_available
 
 from colpali_engine.models import ColQwen2, ColQwen2Processor
-from evaluation.document_provider import DocumentProvider
+from evaluation.classes.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
 
 def pad_embeddings(emb_list: List[torch.Tensor], max_chunks: int) -> torch.Tensor:
@@ -43,20 +42,13 @@ class ColQwen2Retriever(BaseRetriever):
         filenames = list(OrderedDict.fromkeys(provider.chunk_to_page.values()))
         self.page_ids = [Path(fn).stem for fn in filenames]
         image_dir = Path(image_dir)
-
-        # Choose attention implementation if available
-        attn_impl = (
-            "flash_attention_2"
-            if is_flash_attn_2_available()
-            else None
-        )
         
         # Load ColQwen2 model & processor
         self.model = ColQwen2.from_pretrained(
             model_name,
             torch_dtype=torch.bfloat16,
             device_map=device_map,
-            attn_implementation=attn_impl,
+            attn_implementation='eager',
         ).eval()
         self.processor = ColQwen2Processor.from_pretrained(model_name)
         self.device = next(self.model.parameters()).device

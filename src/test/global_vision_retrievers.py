@@ -10,8 +10,8 @@ from retrievers.clip import ClipRetriever
 from retrievers.biqwen2_5 import BiQwen2_5Retriever
 from retrievers.gme_qwen2vl import GmeQwen2VL7BRetriever
 
-from evaluation.document_provider import DocumentProvider
-from evaluation.query_qrel_builder import QueryQrelsBuilder
+from evaluation.classes.document_provider import DocumentProvider
+from evaluation.classes.query_qrel_builder import QueryQrelsBuilder
 
 def test_retriever(retriever_class, provider, queries, qrels, results, agg="max", txt_file_path=None, **kwargs):
     # Use model_name as key if provided, otherwise use class name

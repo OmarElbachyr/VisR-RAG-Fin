@@ -5,7 +5,7 @@ from collections import OrderedDict
 import torch
 from PIL import Image
 from transformers import AutoModel
-from evaluation.document_provider import DocumentProvider
+from evaluation.classes.document_provider import DocumentProvider
 from retrievers.base import BaseRetriever
 
 class GmeQwen2VL7BRetriever(BaseRetriever):
