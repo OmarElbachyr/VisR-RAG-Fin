@@ -13,8 +13,9 @@ HF_TOKEN = os.getenv('HF_TOKEN')
 
 
 class HuggingFaceTopKGenerator:
-    def __init__(self, data_file, models, top_k=1):
+    def __init__(self, data_file, annotations_file, models, top_k=1):
         self.data_file = data_file
+        self.annotations_file = annotations_file
         self.top_k = top_k
         self.model_pipelines = { #FIXME:this code works with transformers==4.53.3 but could break colpali code that uses (4.51.3)  
             model: pipeline(
@@ -32,7 +33,11 @@ class HuggingFaceTopKGenerator:
         with open(self.data_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
         print(f"Loaded {len(data)} entries")
-        return data
+
+        with open(self.annotations_file, 'r', encoding='utf-8') as f:
+            annotations = json.load(f)
+        print(f"Loaded {len(annotations)} annotations")
+        return data, annotations
     
     def get_image_path(self, filename):
         return f"data/pages/{filename.split('/')[-1]}.png"
@@ -99,10 +104,10 @@ class HuggingFaceTopKGenerator:
             }
 
 
-    def generate_answers(self, models, limit=None, output_dir="src/generators/results"):
+    def generate_answers(self, models, limit=None, output_dir="src/generators/results/retrieval_pipeline"):
         print(f"Testing models: {models}")
         
-        data = self.load_data()
+        data, annotations = self.load_data()
 
         # Get sorted question keys and apply limit if specified
         question_keys = sorted([k for k in data.keys() if k.startswith('q')], 
@@ -125,6 +130,43 @@ class HuggingFaceTopKGenerator:
             if len(images) != self.top_k:
                 print(f"Not enough images for top-k (got {len(images)}, need {self.top_k}), skipping entry")
                 continue
+
+            # Find the ground truth answer and metadata in annotations
+            ground_truth_answer = None
+            ground_truth_type = None
+            ground_truth_evidence = None
+            company = None
+            file_category = None
+            language = None
+            
+            for annotation in annotations:
+                for qa_pair in annotation.get('qa_pairs', []):
+                    if qa_pair.get('question_id') == q_key:
+                        ground_truth_answer = qa_pair.get('answer')
+                        ground_truth_type = qa_pair.get('type')
+                        ground_truth_evidence = qa_pair.get('evidence')
+                        company = annotation.get('company')
+                        file_category = annotation.get('file_category')
+                        language = annotation.get('language')
+                        break
+                
+                # Fallback: if qa_pairs is empty or missing, try to get from direct fields
+                if ground_truth_answer is None:
+                    answer_key = f"a{q_key[1:]}"  # Convert q1 -> a1, q2 -> a2, etc.
+                    type_key = f"type{q_key[1:]}"  # Convert q1 -> type1, q2 -> type2, etc.
+                    evidence_key = f"evidence{q_key[1:]}"  # Convert q1 -> evidence1, q2 -> evidence2, etc.
+                    
+                    if answer_key in annotation:
+                        ground_truth_answer = annotation.get(answer_key)
+                        ground_truth_type = annotation.get(type_key)
+                        ground_truth_evidence = annotation.get(evidence_key)
+                        company = annotation.get('company')
+                        file_category = annotation.get('file_category')
+                        language = annotation.get('language')
+                        break
+                
+                if ground_truth_answer is not None:
+                    break
             
             for model in models:
                 print(f"  Model: {model}")
@@ -137,11 +179,17 @@ class HuggingFaceTopKGenerator:
                     'model': model,
                     'q_id': q_key,
                     'question': question,
-                    'images': json.dumps(top_k_images),
+                    'relevant_pages': top_k_images,
+                    'ground_truth': ground_truth_answer,
+                    'evidence': ground_truth_evidence,
+                    'type': ground_truth_type,
                     'predicted': result['response'],
                     'success': result['success'],
                     'time': result['time'],
                     'error': result.get('error'),
+                    'company': company,
+                    'file_category': file_category,
+                    'language': language
                 })
                 
         # Save results - separate file for each model
@@ -170,16 +218,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--models', nargs='+', help='Models to test')
     parser.add_argument('--retrievers', nargs='+', help='Retrievers to test')
+    parser.add_argument('--annotations_file', default='data/annotations/label-studio-data-min_filtered.json')
     parser.add_argument('--top_k', nargs='+', type=int, default=[1], help='List of top-k values to provide to each model (e.g. --top_k 1 3 5)')
-    parser.add_argument('--data_file', default='data/label-studio-data-min.json')
-    parser.add_argument('--output_dir', default='src/generators/results')
+    parser.add_argument('--output_dir', default='src/generators/results/retrieval_pipeline', help='Directory containing end-to-end retrieval + generation pipeline results')
     parser.add_argument('--limit', type=int, help='Limit entries')
 
     args = parser.parse_args()
 
     # Set default values in code (can still be overridden by command line)
     if not args.models:
-        args.models =  ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf'] #, 'OpenGVLab/InternVL3-2B-hf']
+        args.models =  ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf'] #, 
     if not args.retrievers:
         args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b','nomic-ai/colnomic-embed-multimodal-7b']
 
@@ -188,7 +236,8 @@ def main():
     if not args.limit:
         args.limit = None
 
-    args.top_k = [1, 3]
+    if not args.top_k:
+        args.top_k = [1, 3]
 
     for top_k in args.top_k:
         print(f"\n=== Running for top_k: {top_k} ===")
@@ -197,7 +246,7 @@ def main():
             data_file = f'data/retrieved_pages/{data_option}/{retriever.replace("/", "_")}_sorted_run.json'
             retriever_subdir = os.path.join(args.output_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
             os.makedirs(retriever_subdir, exist_ok=True)
-            generator = HuggingFaceTopKGenerator(data_file, models=args.models, top_k=top_k)
+            generator = HuggingFaceTopKGenerator(data_file, args.annotations_file, models=args.models, top_k=top_k)
             generator.generate_answers(args.models, args.limit, retriever_subdir)
 
 

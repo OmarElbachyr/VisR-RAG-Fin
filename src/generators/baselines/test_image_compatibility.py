@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 class ImageCompatibilityTester:
-    def __init__(self, data_file="data/label-studio-data-min.json"):
+    def __init__(self, data_file="data/annotations/label-studio-data-min.json"):
         self.data_file = data_file
         
     def load_data(self):
@@ -206,7 +206,7 @@ class ImageCompatibilityTester:
 def main():
     parser = argparse.ArgumentParser(description='Test image compatibility with Ollama vision models')
     parser.add_argument('--models', nargs='+', help='Models to test')
-    parser.add_argument('--data_file', default='data/label-studio-data-min.json',
+    parser.add_argument('--data_file', default='data/annotations/label-studio-data-min.json',
                         help='JSON file containing image data')
     parser.add_argument('--output_dir', default='src/generators/baselines/results',
                         help='Directory to save results')

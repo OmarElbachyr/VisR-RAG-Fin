@@ -34,9 +34,11 @@ test_scripts
 learn
 data/*
 !/data/pages 
-src/generators/results
+!/data/annotations
 data/retrieved_pages
-/home/omar/projects/vqa-ir-qa/src/generators/baselines/results
-auto_annotate/results
 src/generators/baselines/results
+auto_annotate/results
 src/test/retrievers_test
+src/dataset/chunks
+src/results/judged
+runner.sh

@@ -10,7 +10,7 @@ SMALL_MODELS=(
   "gemma3n:e2b-it-q4_K_M" # instruction-tuned
   "gemma3n:e4b-it-q4_K_M" # instruction-tuned
   # gemma models
-  "gemma3:1b-it-q4_K_M" #FIXME: error 500
+  "gemma3:1b-it-q4_K_M" 
   "gemma3:4b-it-q4_K_M"
 )
 
