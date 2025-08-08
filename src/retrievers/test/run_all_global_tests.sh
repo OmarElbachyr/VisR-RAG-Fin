@@ -8,6 +8,10 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# To install the right transformers version
+pip install -r requirements.txt
+echo "Requirements installed."
+
 python3 -u "$SCRIPT_DIR/global_text_retrievers.py"
 echo "global_text_retrievers.py finished."
 
