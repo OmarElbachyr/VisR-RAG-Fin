@@ -72,24 +72,8 @@ Proposed Answer: {predicted_answer}"""
 
 
 class ResultsEvaluator:
-    def evaluate_existing_answers(self, judge, reference_data_file, results_dir, output_dir="src/generators/results", limit=None, models=None, evaluate_baselines=False):
+    def evaluate_existing_answers(self, judge, results_dir, output_dir="src/results/judged", limit=None, models=None):
         print(f"Judge model: {judge.judge_model if not judge.use_openai else judge.openai_model}")
-
-        if not evaluate_baselines:
-            with open(reference_data_file, 'r', encoding='utf-8') as f:
-                reference_data = json.load(f)
-            reference_map = {}
-            q_counter = 1
-            for entry in reference_data:
-                for qa in entry.get('qa_pairs', []):
-                    q_key = f"q{q_counter}"
-                    reference_map[q_key] = qa.get('formatted_answer', qa.get('original_answer', ''))
-                    q_counter += 1
-            print(f"Loaded {len(reference_data)} reference entries")
-            print(f"Created reference mapping for {len(reference_map)} questions")
-        else:
-            reference_map = {}
-            print("Baseline evaluation mode: using ground_truth from files")
 
         norm_models = None
         if models:
@@ -98,7 +82,8 @@ class ResultsEvaluator:
         result_files = []
         for root, dirs, files in os.walk(results_dir):
             for file in files:
-                result_files.append(os.path.join(root, file))
+                if file.endswith('.json'):
+                    result_files.append(os.path.join(root, file))
         print(f"Found {len(result_files)} result files to evaluate in {results_dir}")
 
         os.makedirs(output_dir, exist_ok=True)
@@ -120,62 +105,31 @@ class ResultsEvaluator:
 
             evaluated_results = []
             for result in existing_results:
-                if evaluate_baselines:
-                    reference_answer = result.get('ground_truth')
-                    predicted = result.get('predicted')
-                    question = result.get('question')
-                    if result.get('success') and predicted:
-                        print(f"  Evaluating baseline: {question[:30]}...")
-                        judgment = judge.evaluate_answer(question, reference_answer, predicted)
-                        evaluated_results.append({
-                            **result,
-                            'reference_answer': reference_answer,
-                            'judgment_success': judgment['success'],
-                            'is_correct': judgment['is_correct'],
-                            'judgment': judgment['judgment'],
-                            'judgment_time': judgment['time'],
-                            'judgment_error': judgment.get('error')
-                        })
-                    else:
-                        evaluated_results.append({
-                            **result,
-                            'reference_answer': reference_answer,
-                            'judgment_success': False,
-                            'is_correct': None,
-                            'judgment': None,
-                            'judgment_time': None,
-                            'judgment_error': 'Generation failed'
-                        })
+                reference_answer = result.get('ground_truth')
+                predicted = result.get('predicted')
+                question = result.get('question')
+                
+                if result.get('success') and predicted and reference_answer:
+                    print(f"  Evaluating: {question[:30]}...")
+                    judgment = judge.evaluate_answer(question, reference_answer, predicted)
+                    evaluated_results.append({
+                        **result,
+                        'judgment_success': judgment['success'],
+                        'is_correct': judgment['is_correct'],
+                        'judgment': judgment['judgment'],
+                        'judgment_time': judgment['time'],
+                        'judgment_error': judgment.get('error')
+                    })
                 else:
-                    q_id = result['q_id']
-                    question = result['question']
-                    predicted = result['predicted']
-                    reference_answer = reference_map.get(q_id)
-                    if not reference_answer:
-                        print(f"  No reference answer for {q_id}, skipping")
-                        continue
-                    if result['success'] and predicted:
-                        print(f"  Evaluating {q_id}: {question[:30]}...")
-                        judgment = judge.evaluate_answer(question, reference_answer, predicted)
-                        evaluated_results.append({
-                            **result,
-                            'reference_answer': reference_answer,
-                            'judgment_success': judgment['success'],
-                            'is_correct': judgment['is_correct'],
-                            'judgment': judgment['judgment'],
-                            'judgment_time': judgment['time'],
-                            'judgment_error': judgment.get('error')
-                        })
-                    else:
-                        evaluated_results.append({
-                            **result,
-                            'reference_answer': reference_answer,
-                            'judgment_success': False,
-                            'is_correct': None,
-                            'judgment': None,
-                            'judgment_time': None,
-                            'judgment_error': 'Generation failed'
-                        })
+                    evaluated_results.append({
+                        **result,
+                        'reference_answer': reference_answer,
+                        'judgment_success': False,
+                        'is_correct': None,
+                        'judgment': None,
+                        'judgment_time': None,
+                        'judgment_error': 'Generation failed or missing ground truth'
+                    })
 
             output_file = os.path.join(output_dir, f'{model_name}.json')
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -183,7 +137,11 @@ class ResultsEvaluator:
                 json.dump(evaluated_results, f, indent=2, ensure_ascii=False)
             print(f"  Saved: {output_file}")
 
+            # Create a more meaningful key for evaluation summary
             retriever_name = os.path.basename(os.path.dirname(result_file))
+            # Handle baseline case where retriever_name would be "results"
+            if retriever_name == "results":
+                retriever_name = "baselines"
             key = f"{retriever_name}/{model_name}"
             all_evaluations[key] = evaluated_results
 
@@ -191,7 +149,10 @@ class ResultsEvaluator:
         print("EVALUATION SUMMARY")
         print(f"{'='*60}")
         for key, results in all_evaluations.items():
-            retriever, model = key.split('/')
+            if '/' in key:
+                retriever, model = key.split('/', 1)  # Use maxsplit=1 to handle model names with slashes
+            else:
+                retriever, model = "unknown", key
             total = len(results)
             generation_successful = sum(1 for r in results if r['success'])
             judgment_successful = sum(1 for r in results if r['judgment_success'])
@@ -212,9 +173,10 @@ def main():
     parser.add_argument('--models', nargs='+', help='Models to test')
     parser.add_argument('--evaluate_baselines', action='store_true', help='Evaluate baseline models')
     parser.add_argument('--retrievers', nargs='+', help='Retrievers to test')
-    parser.add_argument('--top_k', default='1', help='Number of top-k pages to provide to each model')
-    parser.add_argument('--reference_data_file', default='data/label-studio-data-min.json', help='File with reference answers')
-    parser.add_argument('--output_dir', default='src/generators/results')
+    parser.add_argument('--top_k', nargs='+', type=int, help='List of top-k values to evaluate (e.g. --top_k 1 3 5)')
+    parser.add_argument('--output_dir', default='src/results')
+    parser.add_argument('--baseline_results_dir', default='src/generators/results/baselines', help='Directory containing baseline results')
+    parser.add_argument('--pipeline_results_dir', default='src/generators/results/retrieval_pipeline', help='Directory containing end-to-end retrieval + generation pipeline results')
     parser.add_argument('--limit', type=int, help='Limit entries')
     parser.add_argument('--judge_model', default='qwen2.5:14b', help='Judge model for evaluation')
     parser.add_argument('--use_openai_judge', action='store_true', help='Use OpenAI model as judge')
@@ -229,8 +191,8 @@ def main():
         args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b', 'nomic-ai/colnomic-embed-multimodal-7b']
     if not args.limit:
         args.limit = None
-    args.top_k = 3
-    args.evaluate_baselines = True
+    if not args.top_k:
+        args.top_k = [1, 3]
 
     try:
         ollama.list()
@@ -256,55 +218,39 @@ def main():
 
     if args.evaluate_baselines:
         # Baseline: evaluate each VLM (model) separately, ignore retrievers
-        results_dir = 'src/generators/baselines/results'
+        results_dir = args.baseline_results_dir
         output_dir = os.path.join(args.output_dir, 'judged', 'baselines')
         os.makedirs(results_dir, exist_ok=True)
         os.makedirs(output_dir, exist_ok=True)
-        for model in args.models:
-            # Normalize model name to match file naming
-            norm_model = model.replace("/", "-").replace(".", "-").replace("_", "-").replace(":", "-")
-            # Adjust to locate files with prefixes like 'hf_baselines_' or 'ollama_baselines_'
-            possible_prefixes = ["hf_baselines_", "ollama_baselines_"]
-            result_file = None
-            for prefix in possible_prefixes:
-                candidate_file = os.path.join(results_dir, f'{prefix}{norm_model}.json')
-                if os.path.exists(candidate_file):
-                    result_file = candidate_file
-                    break
-
-            if not result_file:
-                print(f"Baseline result file not found for model: {model}")
-                continue
-            print(f"\n=== Evaluating baseline for model: {model} ===")
-            # Evaluate and save output in output_dir/norm_model.json
-            evaluator.evaluate_existing_answers(
-                judge,
-                args.reference_data_file,
-                results_dir,
-                output_dir,
-                args.limit,
-                [model],
-                args.evaluate_baselines
-            )
+        
+        print(f"\n=== Evaluating baselines ===")
+        evaluator.evaluate_existing_answers(
+            judge,
+            results_dir,
+            output_dir,
+            args.limit,
+            args.models
+        )
     else:
-        # Standard evaluation: iterate over retrievers
-        for retriever in args.retrievers:
-            print(f"\n=== Evaluating for retriever: {retriever} ===")
-            results_dir = os.path.join(args.output_dir, f'top_k_{args.top_k}', retriever.replace("/", "_"))
-            output_subdir = os.path.join(args.output_dir, 'judged', f'top_k_{args.top_k}', retriever.replace("/", "_"))
-            os.makedirs(results_dir, exist_ok=True)
-            if not os.path.exists(results_dir):
-                print(f"Results directory not found: {results_dir}")
-                continue
-            evaluator.evaluate_existing_answers(
-                judge,
-                args.reference_data_file,
-                results_dir,
-                output_subdir,
-                args.limit,
-                args.models,
-                args.evaluate_baselines
-            )
+        # Standard evaluation: iterate over top_k values and retrievers
+        for top_k in args.top_k:
+            print(f"\n=== Evaluating for top_k: {top_k} ===")
+            for retriever in args.retrievers:
+                print(f"\n=== Evaluating for retriever: {retriever} ===")
+                results_dir = os.path.join(args.pipeline_results_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
+                output_subdir = os.path.join(args.output_dir, 'judged', f'top_k_{top_k}', retriever.replace("/", "_"))
+                
+                if not os.path.exists(results_dir):
+                    print(f"Results directory not found: {results_dir}")
+                    continue
+                    
+                evaluator.evaluate_existing_answers(
+                    judge,
+                    results_dir,
+                    output_subdir,
+                    args.limit,
+                    args.models
+                )
 
 if __name__ == "__main__":
     main()

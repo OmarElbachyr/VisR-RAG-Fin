@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Tuple
 import shutil
 
+from dataset.utils import filter_qa_pairs
 import pandas as pd
 from PIL import Image
 from tqdm import tqdm
@@ -14,7 +15,7 @@ from unstructured.partition.image import partition_image  # OCR / layout extract
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
-JSON_PATH = Path("data/label-studio-data-min.json")
+JSON_PATH = Path("data/annotations/label-studio-data-min.json")
 IMG_DIR = Path("data/pages")
 NOISE_DIR = Path("data/noise_pages")  # path for noise images
 CSV_PATH = Path("src/dataset/chunks/chunked_pages_all.csv")
@@ -107,9 +108,8 @@ def _extract_page_chunks(img_path: Path) -> List[Tuple[str, str, str]]:
 
 
 def main() -> None:
-    # Read JSON annotations
-    with open(JSON_PATH, encoding="utf-8") as fh:
-        records = json.load(fh)
+    # Read and filter JSON annotations
+    records = filter_qa_pairs(JSON_PATH)
 
     if LIMIT > 0:
         records = records[:LIMIT]

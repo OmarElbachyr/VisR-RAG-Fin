@@ -227,9 +227,9 @@ def save_metrics_json(metrics, output_file):
 
 def main():
     parser = argparse.ArgumentParser(description='Compute metrics from judged results')
-    parser.add_argument('--results_dir', default='src/generators/results/judged', 
+    parser.add_argument('--results_dir', default='src/results/judged', 
                        help='Directory containing judged results')
-    parser.add_argument('--output_file', default='src/generators/results/metrics.json',
+    parser.add_argument('--output_file', default='src/results/generation_metrics.json',
                        help='Output file for metrics JSON')
     parser.add_argument('--no_save', action='store_true', help='Don\'t save metrics to file')
     

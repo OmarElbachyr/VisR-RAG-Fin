@@ -9,11 +9,24 @@ from PIL import Image
 from tqdm import tqdm
 from unstructured.chunking.title import chunk_by_title
 from unstructured.partition.image import partition_image  # OCR / layout extraction
+from dataset.utils import filter_qa_pairs
+
+def extract_value(field):
+    """Extract value from either string or nested dict structure"""
+    if isinstance(field, str):
+        return field
+    elif isinstance(field, dict) and "text" in field:
+        text_list = field["text"]
+        if isinstance(text_list, list) and len(text_list) > 0:
+            return text_list[-1]  # Return the last element
+        elif isinstance(text_list, str):
+            return text_list
+    return None
 
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
-JSON_PATH = Path("data/label-studio-data-min.json")
+JSON_PATH = Path("data/annotations/label-studio-data-min.json")
 IMG_DIR = Path("data/pages")
 CSV_PATH = Path("src/dataset/chunks/chunked_pages.csv")
 STRATEGY = "hi_res"
@@ -28,9 +41,9 @@ CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 COLUMNS = [
     "query",
-    "original_query",
     "answer",
-    "original_answer",
+    "hint",
+    "question_id",
     "image",
     "image_filename",
     "page_number",
@@ -101,14 +114,15 @@ def _extract_page_chunks(img_path: Path) -> List[Tuple[str, str, str]]:
     return chunks
 
 def main() -> None:
-    # Read JSON annotations
-    with open(JSON_PATH, encoding="utf-8") as fh:
-        records = json.load(fh)
+    # Read and filter JSON annotations
+    records = filter_qa_pairs(JSON_PATH)
+    
 
     if LIMIT > 0:
         records = records[:LIMIT]
 
     all_rows: list[dict] = []
+    global_question_counter = 0
     
     for rec in tqdm(records, desc="Processing records"):
         # build page chunks once per record
@@ -123,30 +137,29 @@ def main() -> None:
         for q_key in q_keys:
             idx = int(q_key[1:])
 
-            # handle dict-with-text edge case, take first element if list
+            # Extract question and answer using same logic as utils.py
             raw_q = rec.get(f"q{idx}", "")
-            if isinstance(raw_q, dict):
-                q_text = raw_q.get("text", "")
-                if isinstance(q_text, list) and q_text:
-                    query = str(q_text[0]).strip()
-                else:
-                    query = str(q_text).strip()
-            else:
-                query = str(raw_q).strip()
+            raw_a = rec.get(f"a{idx}", "")
+            
+            query = extract_value(raw_q)
+            answer = extract_value(raw_a)
+            
+            # Skip if we can't extract valid question or answer
+            if not query or not answer:
+                continue
 
-            answer = str(rec.get(f"a{idx}", "")).strip()
+            # Increment global question counter for each valid QA pair
+            global_question_counter += 1
+            question_id = f"q{global_question_counter}"
 
-            # original from qa_pairs if present
-            original_query = ""
-            original_answer = ""
+            # Extract hint from qa_pairs if available
+            hint = ""
             qa_list = rec.get("qa_pairs", [])
-            if isinstance(qa_list, list) and 1 <= idx <= len(qa_list):
-                original_query = str(qa_list[idx-1].get("question", "")).strip()
-                oa = qa_list[idx-1].get("original_answer", "")
-                if isinstance(oa, list):
-                    original_answer = ", ".join(str(x) for x in oa).strip()
-                else:
-                    original_answer = str(oa).strip()
+            for qa in qa_list:
+                qa_question = extract_value(qa.get("question"))
+                if qa_question == query:
+                    hint = qa.get("hint", "")
+                    break
 
             relevancy   = str(rec.get(f"relevancy{idx}", "")).strip()
             correctness = str(rec.get(f"correct{idx}", "")).strip()
@@ -156,9 +169,9 @@ def main() -> None:
             for text, ctype, cid in chunks:
                 all_rows.append({
                     "query":            query,
-                    "original_query":   original_query,
                     "answer":           answer,
-                    "original_answer":  original_answer,
+                    "hint":             hint,
+                    "question_id":      question_id,
                     "image":            str(img_path),
                     "image_filename":   png_name,
                     "page_number":      rec.get("page_number"),
