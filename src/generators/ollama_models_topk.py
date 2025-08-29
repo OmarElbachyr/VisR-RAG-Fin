@@ -190,13 +190,19 @@ def main():
     parser.add_argument('--top_k', nargs='+', type=int, default=[1], help='List of top-k values to provide to each model (e.g. --top_k 1 3 5)')
     parser.add_argument('--output_dir', default='src/generators/results/retrieval_pipeline', help='Directory containing end-to-end retrieval + generation pipeline results')
     parser.add_argument('--limit', type=int, help='Limit entries')
+    parser.add_argument('--use_fp16', default=True, action='store_true', help='Use FP16" precision for model inference')
 
     args = parser.parse_args()
 
     # Set default values in code (can still be overridden by command line)
     if not args.models:
-        args.models = ['gemma3:4b-it-q4_K_M', 'qwen2.5vl:3b',
-                       'qwen2.5vl:7b', 'gemma3:12b-it-q4_K_M',]
+        args.models = ['qwen2.5vl:3b', 'gemma3:4b-it',
+                       'qwen2.5vl:7b', 'gemma3:12b-it']
+        if args.use_fp16:
+            print("Using FP16 precision for model inference")
+            args.models = [f"{model}-fp16" for model in args.models]
+            args.output_dir = f"{args.output_dir}/fp16"
+
     if not args.retrievers:
         args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b','nomic-ai/colnomic-embed-multimodal-7b']
 

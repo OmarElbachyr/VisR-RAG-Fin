@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath("/home/omar/projects/vqa-ir-qa/src"))
 from retrievers.classes.colpali import ColPaliRetriever
 from evaluation.classes.document_provider import DocumentProvider
 from evaluation.classes.query_qrel_builder import QueryQrelsBuilder
+from evaluation.utils.ir_dataset import export_ir_dataset
 
 if __name__ == "__main__":
     data_option = "annotated_pages"  # Set to "annotated_pages" for annotated data, "all_pages" for all sampled data
@@ -21,6 +22,10 @@ if __name__ == "__main__":
     provider = DocumentProvider(csv_path)
     print(provider.stats)
     queries, qrels = QueryQrelsBuilder(csv_path).build()
+    
+    # Export IR dataset (one-time, centralized)
+    export_ir_dataset(csv_path, output_dir=f"ir_export_{data_option}", format_type="csv")
+    
     model_name = "vidore/colpali-v1.3"
     colpali = ColPaliRetriever(
         provider,

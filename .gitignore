@@ -37,7 +37,11 @@ data/*
 !/data/annotations
 data/retrieved_pages
 src/generators/baselines/results
-auto_annotate/results
+auto_annotate
 src/test/retrievers_test
-src/dataset/chunks
 runner.sh
+
+# Export dataset folders
+src/evaluation/utils
+test_export_beir
+test_export_csv

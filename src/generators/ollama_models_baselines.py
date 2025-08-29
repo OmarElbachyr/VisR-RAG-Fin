@@ -134,13 +134,18 @@ def main():
     parser.add_argument('--data_file', default='data/annotations/label-studio-data-min_filtered.json')
     parser.add_argument('--output_dir', default='src/generators/results/baselines')
     parser.add_argument('--limit', type=int, help='Limit entries')
+    parser.add_argument('--use_fp16', default=True, action='store_true', help='Use FP16" precision for model inference')
     
     args = parser.parse_args()
     
     # Set default values in code (can still be overridden by command line)
     if not args.models:
-        args.models = ['qwen2.5vl:3b', 'gemma3:4b-it-q4_K_M',
-                       'qwen2.5vl:7b', 'gemma3:12b-it-q4_K_M']
+        args.models = ['qwen2.5vl:3b', 'gemma3:4b-it',
+                       'qwen2.5vl:7b', 'gemma3:12b-it']
+        if args.use_fp16:
+            print("Using FP16 precision for model inference")
+            args.models = [f"{model}-fp16" for model in args.models]
+            args.output_dir = f"{args.output_dir}/fp16"
         
     if not args.limit:
         args.limit = None
