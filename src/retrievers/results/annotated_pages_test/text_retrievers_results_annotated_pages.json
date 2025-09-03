@@ -1,0 +1,195 @@
+{
+    "docs_stats": {
+        "unique_pages": 99,
+        "total_chunks": 701,
+        "unique_queries": 288
+    },
+    "models": {
+        "BM25Retriever": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.5694444444444444,
+                    "precision": 0.5694444444444444,
+                    "recall": 0.5694444444444444
+                },
+                "3": {
+                    "ndcg": 0.6974587496403806,
+                    "precision": 0.2627314814814815,
+                    "recall": 0.7881944444444444
+                },
+                "5": {
+                    "ndcg": 0.7215111375907208,
+                    "precision": 0.16944444444444498,
+                    "recall": 0.8472222222222222
+                },
+                "10": {
+                    "ndcg": 0.7409133037979257,
+                    "precision": 0.09062500000000034,
+                    "recall": 0.90625
+                },
+                "global": {
+                    "mrr": 0.6920022403611545,
+                    "rprec": 0.5694444444444444
+                }
+            },
+            "indexing_time": 0.17479228973388672,
+            "retrieval_time": 0.42244601249694824,
+            "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/BM25Retriever_sorted_run.json"
+        },
+        "BAAI/bge-m3": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.7048611111111112,
+                    "precision": 0.7048611111111112,
+                    "recall": 0.7048611111111112
+                },
+                "3": {
+                    "ndcg": 0.7839348744419663,
+                    "precision": 0.28009259259259234,
+                    "recall": 0.8402777777777778
+                },
+                "5": {
+                    "ndcg": 0.8024621409347475,
+                    "precision": 0.17708333333333398,
+                    "recall": 0.8854166666666666
+                },
+                "10": {
+                    "ndcg": 0.8175981325603583,
+                    "precision": 0.09305555555555595,
+                    "recall": 0.9305555555555556
+                },
+                "global": {
+                    "mrr": 0.7843708993992978,
+                    "rprec": 0.7048611111111112
+                }
+            },
+            "indexing_time": 7.792702674865723,
+            "retrieval_time": 2.2226877212524414,
+            "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/BAAI_bge-m3_sorted_run.json"
+        },
+        "intfloat/multilingual-e5-large": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.6944444444444444,
+                    "precision": 0.6944444444444444,
+                    "recall": 0.6944444444444444
+                },
+                "3": {
+                    "ndcg": 0.7998069475074436,
+                    "precision": 0.29050925925925886,
+                    "recall": 0.8715277777777778
+                },
+                "5": {
+                    "ndcg": 0.8204120286221471,
+                    "precision": 0.18472222222222298,
+                    "recall": 0.9236111111111112
+                },
+                "10": {
+                    "ndcg": 0.831480538089655,
+                    "precision": 0.09583333333333376,
+                    "recall": 0.9583333333333334
+                },
+                "global": {
+                    "mrr": 0.7921910455624664,
+                    "rprec": 0.6944444444444444
+                }
+            },
+            "indexing_time": 7.282595634460449,
+            "retrieval_time": 2.2400152683258057,
+            "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/intfloat_multilingual-e5-large_sorted_run.json"
+        },
+        "intfloat/multilingual-e5-large-instruct": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.7083333333333334,
+                    "precision": 0.7083333333333334,
+                    "recall": 0.7083333333333334
+                },
+                "3": {
+                    "ndcg": 0.774345084486609,
+                    "precision": 0.27314814814814803,
+                    "recall": 0.8194444444444444
+                },
+                "5": {
+                    "ndcg": 0.8013882818680146,
+                    "precision": 0.17708333333333398,
+                    "recall": 0.8854166666666666
+                },
+                "10": {
+                    "ndcg": 0.823051795026243,
+                    "precision": 0.0951388888888893,
+                    "recall": 0.9513888888888888
+                },
+                "global": {
+                    "mrr": 0.7853172509543609,
+                    "rprec": 0.7083333333333334
+                }
+            },
+            "indexing_time": 7.594205617904663,
+            "retrieval_time": 2.284489631652832,
+            "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/intfloat_multilingual-e5-large-instruct_sorted_run.json"
+        },
+        "colbert-ir/colbertv2.0": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.7430555555555556,
+                    "precision": 0.7430555555555556,
+                    "recall": 0.7430555555555556
+                },
+                "3": {
+                    "ndcg": 0.8361829231522844,
+                    "precision": 0.299768518518518,
+                    "recall": 0.8993055555555556
+                },
+                "5": {
+                    "ndcg": 0.850680472903039,
+                    "precision": 0.18680555555555634,
+                    "recall": 0.9340277777777778
+                },
+                "10": {
+                    "ndcg": 0.8628278885522865,
+                    "precision": 0.09687500000000043,
+                    "recall": 0.96875
+                },
+                "global": {
+                    "mrr": 0.8287719244163454,
+                    "rprec": 0.7430555555555556
+                }
+            },
+            "indexing_time": 3.9377665519714355,
+            "retrieval_time": 14.87727665901184,
+            "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/colbert-ir_colbertv2.0_sorted_run.json"
+        },
+        "naver/splade-v3": {
+            "metrics": {
+                "1": {
+                    "ndcg": 0.7152777777777778,
+                    "precision": 0.7152777777777778,
+                    "recall": 0.7152777777777778
+                },
+                "3": {
+                    "ndcg": 0.8115051080853204,
+                    "precision": 0.2916666666666663,
+                    "recall": 0.875
+                },
+                "5": {
+                    "ndcg": 0.8376615639572886,
+                    "precision": 0.18750000000000078,
+                    "recall": 0.9375
+                },
+                "10": {
+                    "ndcg": 0.8492427925837708,
+                    "precision": 0.09722222222222267,
+                    "recall": 0.9722222222222222
+                },
+                "global": {
+                    "mrr": 0.8093887786596121,
+                    "rprec": 0.7152777777777778
+                }
+            },
+            "indexing_time": 4.270841836929321,
+            "retrieval_time": 0.14778661727905273,
+            "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/naver_splade-v3_sorted_run.json"
+        }
+    }
+}

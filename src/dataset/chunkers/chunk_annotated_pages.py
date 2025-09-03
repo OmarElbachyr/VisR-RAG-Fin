@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import List, Tuple
+import random
 
 import pandas as pd
 from PIL import Image
@@ -30,7 +31,9 @@ JSON_PATH = Path("data/annotations/label-studio-data-min.json")
 IMG_DIR = Path("data/pages")
 CSV_PATH = Path("src/dataset/chunks/chunked_pages.csv")
 STRATEGY = "hi_res"
-LIMIT = -1
+LIMIT = 100
+random.seed(32)
+
 
 CHUNK_IMG_DIR = Path("chunks_images")
 CHUNK_IMG_DIR.mkdir(parents=True, exist_ok=True)
@@ -117,9 +120,17 @@ def main() -> None:
     # Read and filter JSON annotations
     records = filter_qa_pairs(JSON_PATH)
     
-
     if LIMIT > 0:
-        records = records[:LIMIT]
+        records = random.sample(records, min(LIMIT, len(records)))
+        
+        # Save the sampled filtered version
+        sampled_json_path = JSON_PATH.parent / f"{JSON_PATH.stem}_filtered_sampled{JSON_PATH.suffix}"
+        with open(sampled_json_path, "w", encoding="utf-8") as f:
+            json.dump(records, f, indent=2)
+        print(f"✅ Saved sampled filtered data ({len(records)} records) → {sampled_json_path}")
+        
+        global CSV_PATH
+        CSV_PATH = CSV_PATH.with_name(CSV_PATH.stem + "_test.csv")
 
     all_rows: list[dict] = []
     global_question_counter = 0

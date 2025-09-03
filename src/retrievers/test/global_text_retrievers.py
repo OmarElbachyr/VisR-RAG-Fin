@@ -2,6 +2,7 @@ import json
 import time
 import sys 
 import os 
+import argparse
 from io import StringIO
 from contextlib import redirect_stdout
 
@@ -13,7 +14,7 @@ from retrievers.classes.splade import SpladeRetriever
 from evaluation.classes.document_provider import DocumentProvider
 from evaluation.classes.query_qrel_builder import QueryQrelsBuilder
 
-def test_retriever(retriever_class, provider, queries, qrels, results, agg="max", txt_file_path=None, **kwargs):
+def test_retriever(retriever_class, provider, queries, qrels, results, data_option, results_dir, agg="max", txt_file_path=None, **kwargs):
     # Use model_name as key if provided, otherwise use class name
     key = kwargs.get("model_name", retriever_class.__name__)
     
@@ -46,9 +47,7 @@ def test_retriever(retriever_class, provider, queries, qrels, results, agg="max"
     
     # Save sorted run to data/retrieved_pages
     safe_key = key.replace("/", "_").replace(":", "_")  # Make filename safe
-    # Get data_option from main module if available, else default to "default"
-    data_option = getattr(sys.modules["__main__"], "data_option", "default")
-    run_file_path = f"data/retrieved_pages/{data_option}/{safe_key}_sorted_run.json"
+    run_file_path = f"{results_dir}/retrieved_pages/{safe_key}_sorted_run.json"
     os.makedirs(os.path.dirname(run_file_path), exist_ok=True)
     with open(run_file_path, "w") as run_file:
         json.dump(sorted_run, run_file, indent=4)
@@ -72,7 +71,7 @@ def test_retriever(retriever_class, provider, queries, qrels, results, agg="max"
             txtf.write(f"Sorted run saved to: {run_file_path}\n")
             txtf.write("-" * 80 + "\n")
 
-    # Store mertrics
+    # Store metrics
     results[key] = {
         "metrics": metrics,
         "indexing_time": indexing_time,
@@ -80,25 +79,24 @@ def test_retriever(retriever_class, provider, queries, qrels, results, agg="max"
         "sorted_run_path": run_file_path
     }
 
-if __name__ == "__main__":
-    data_option = "annotated_pages"  # Set to "annotated_pages" for annotated data, "all_pages" for all sampled data
-
+def setup_paths_and_results(data_option, is_test):
+    """Setup file paths and load existing results."""
     if data_option == "annotated_pages":
-        csv_path = "src/dataset/chunks/chunked_pages.csv"
+        csv_path = "src/dataset/chunks/chunked_pages_test.csv" if is_test else "src/dataset/chunks/chunked_pages.csv"
     elif data_option == "all_pages":
         csv_path = "src/dataset/chunks/chunked_sampled_pages.csv"
     else:
         raise ValueError("Invalid data_option. Choose 'annotated_pages' or 'all_pages'.")
     
-    image_dir = "data/pages"
-    results_dir = f"src/results/{data_option}"
+    results_dir = f"src/retrievers/results/{data_option}{'_test' if is_test else ''}"
     os.makedirs(results_dir, exist_ok=True)
     results_path = f"{results_dir}/text_retrievers_results_{data_option}.json"
     txt_results_path = f"{results_dir}/text_retrievers_results_{data_option}.txt"
-
-    provider = DocumentProvider(csv_path, use_nltk_preprocessor=True)
     
-    # Load existing results if present, else initialize
+    return csv_path, results_path, txt_results_path
+
+def load_or_create_results(results_path, txt_results_path, provider):
+    """Load existing results or create new results structure."""
     if os.path.exists(results_path):
         with open(results_path, "r") as f:
             results = json.load(f)
@@ -115,30 +113,58 @@ if __name__ == "__main__":
             txtf.write(f"Provider Stats:\n{provider.stats}\n")
             txtf.write("=" * 80 + "\n\n")
     
-    print(provider.stats)
-    queries, qrels = QueryQrelsBuilder(csv_path).build()
+    return results
 
-    test_retriever(BM25Retriever, provider, queries, qrels, results["models"], agg="max", 
+def run_all_tests(provider, queries, qrels, results, data_option, results_dir, txt_results_path):
+    """Run tests for all retriever models."""
+    test_retriever(BM25Retriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max", 
                    txt_file_path=txt_results_path)
     
-    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], agg="max",
+    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max",
                    model_name="BAAI/bge-m3", device_map='cuda', txt_file_path=txt_results_path, batch_size=32)
     
-    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], agg="max", 
+    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max", 
                    model_name="intfloat/multilingual-e5-large", is_instruct=False, device_map='cuda', txt_file_path=txt_results_path, batch_size=32)
     
-    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], agg="max", 
+    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max", 
                    model_name="intfloat/multilingual-e5-large-instruct", is_instruct=True, device_map='cuda', txt_file_path=txt_results_path, batch_size=32)
     
-    test_retriever(ColBERTRetriever, provider, queries, qrels, results["models"], agg="max", 
+    test_retriever(ColBERTRetriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max", 
                    model_name="colbert-ir/colbertv2.0", index_folder="indexes/pylate-index", index_name="index", override=True, device_map='cuda', batch_size=32, txt_file_path=txt_results_path)
     
-    test_retriever(SpladeRetriever, provider, queries, qrels, results["models"], agg="max", 
+    test_retriever(SpladeRetriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max", 
                    model_name="naver/splade-v3",
                    batch_size=32, device_map="cuda", txt_file_path=txt_results_path)
 
-    # Save results to JSON file (append/update)
+def main():
+    parser = argparse.ArgumentParser(description="Test text retrievers")
+    parser.add_argument("--data_option", choices=["annotated_pages", "all_pages"], 
+                       default="annotated_pages", help="Data option to use")
+    parser.add_argument("--is_test", action="store_true", default=True,
+                       help="Use test data (smaller dataset)")
+    
+    args = parser.parse_args()
+    args.is_test = False
+    
+    # Setup paths and load results
+    csv_path, results_path, txt_results_path = setup_paths_and_results(args.data_option, args.is_test)
+    results_dir = os.path.dirname(results_path)
+    
+    # Initialize provider and load/create results
+    provider = DocumentProvider(csv_path, use_nltk_preprocessor=True)
+    results = load_or_create_results(results_path, txt_results_path, provider)
+    
+    print(provider.stats)
+    queries, qrels = QueryQrelsBuilder(csv_path).build()
+
+    # Run all tests
+    run_all_tests(provider, queries, qrels, results, args.data_option, results_dir, txt_results_path)
+
+    # Save results to JSON file
     with open(results_path, "w") as f:
         json.dump(results, f, indent=4)
     print(f"Results saved to {results_path}")
     print(f"Printed output appended to {txt_results_path}")
+
+if __name__ == "__main__":
+    main()

@@ -35,11 +35,13 @@ learn
 data/*
 !/data/pages 
 !/data/annotations
-data/retrieved_pages
+retrieved_pages
 src/generators/baselines/results
 auto_annotate
 src/test/retrievers_test
 runner.sh
+src/retrievers/results/annotated_pages
+src/retrievers/results/all_pages
 
 # Export dataset folders
 src/evaluation/utils

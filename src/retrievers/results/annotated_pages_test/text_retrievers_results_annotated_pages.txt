@@ -1,0 +1,88 @@
+Provider Stats:
+{'unique_pages': 99, 'total_chunks': 701, 'unique_queries': 288}
+================================================================================
+
+
+Testing BM25Retriever...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.5694  P:0.5694  R:0.5694
+K=3   NDCG:0.6975  P:0.2627  R:0.7882
+K=5   NDCG:0.7215  P:0.1694  R:0.8472
+K=10  NDCG:0.7409  P:0.0906  R:0.9062
+GLOBAL MRR:0.6920  Rprec:0.5694
+Indexing time: 0.1748s
+Retrieval time: 0.4224s
+Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/BM25Retriever_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing BAAI/bge-m3...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.7049  P:0.7049  R:0.7049
+K=3   NDCG:0.7839  P:0.2801  R:0.8403
+K=5   NDCG:0.8025  P:0.1771  R:0.8854
+K=10  NDCG:0.8176  P:0.0931  R:0.9306
+GLOBAL MRR:0.7844  Rprec:0.7049
+Indexing time: 7.7927s
+Retrieval time: 2.2227s
+Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/BAAI_bge-m3_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing intfloat/multilingual-e5-large...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.6944  P:0.6944  R:0.6944
+K=3   NDCG:0.7998  P:0.2905  R:0.8715
+K=5   NDCG:0.8204  P:0.1847  R:0.9236
+K=10  NDCG:0.8315  P:0.0958  R:0.9583
+GLOBAL MRR:0.7922  Rprec:0.6944
+Indexing time: 7.2826s
+Retrieval time: 2.2400s
+Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/intfloat_multilingual-e5-large_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing intfloat/multilingual-e5-large-instruct...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.7083  P:0.7083  R:0.7083
+K=3   NDCG:0.7743  P:0.2731  R:0.8194
+K=5   NDCG:0.8014  P:0.1771  R:0.8854
+K=10  NDCG:0.8231  P:0.0951  R:0.9514
+GLOBAL MRR:0.7853  Rprec:0.7083
+Indexing time: 7.5942s
+Retrieval time: 2.2845s
+Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/intfloat_multilingual-e5-large-instruct_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing colbert-ir/colbertv2.0...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.7431  P:0.7431  R:0.7431
+K=3   NDCG:0.8362  P:0.2998  R:0.8993
+K=5   NDCG:0.8507  P:0.1868  R:0.9340
+K=10  NDCG:0.8628  P:0.0969  R:0.9688
+GLOBAL MRR:0.8288  Rprec:0.7431
+Indexing time: 3.9378s
+Retrieval time: 14.8773s
+Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/colbert-ir_colbertv2.0_sorted_run.json
+--------------------------------------------------------------------------------
+
+Testing naver/splade-v3...
+Evaluating run with ir_measures...
+
+=== Evaluation Results ===
+K=1   NDCG:0.7153  P:0.7153  R:0.7153
+K=3   NDCG:0.8115  P:0.2917  R:0.8750
+K=5   NDCG:0.8377  P:0.1875  R:0.9375
+K=10  NDCG:0.8492  P:0.0972  R:0.9722
+GLOBAL MRR:0.8094  Rprec:0.7153
+Indexing time: 4.2708s
+Retrieval time: 0.1478s
+Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/naver_splade-v3_sorted_run.json
+--------------------------------------------------------------------------------

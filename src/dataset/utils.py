@@ -88,8 +88,11 @@ def filter_qa_pairs(annotation_path):
                 cleaned_rec[f"evidence{idx}"] = evidence
                 cleaned_rec[f"type{idx}"] = type_val
                 kept_norm.add(_norm(q))
-        cleaned_rec["qa_pairs"] = valid_qa_pairs
-        cleaned.append(cleaned_rec)
+        
+        # Only add record if it has valid QA pairs
+        if valid_qa_pairs:
+            cleaned_rec["qa_pairs"] = valid_qa_pairs
+            cleaned.append(cleaned_rec)
 
     ann_path_obj = Path(annotation_path)
     cleaned_annotation_path = f"{ann_path_obj.parent}/{ann_path_obj.stem}_filtered{ann_path_obj.suffix}" if ann_path_obj.suffix else f"{ann_path_obj.name}_filtered"
