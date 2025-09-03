@@ -42,6 +42,8 @@ src/test/retrievers_test
 runner.sh
 src/retrievers/results/annotated_pages
 src/retrievers/results/all_pages
+src/generators/results
+src/generators/eval
 
 # Export dataset folders
 src/evaluation/utils

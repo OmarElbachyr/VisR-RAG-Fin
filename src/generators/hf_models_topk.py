@@ -3,6 +3,7 @@ import json
 import time
 import argparse
 import os
+import gc
 from transformers import pipeline
 from PIL import Image
 import torch
@@ -211,6 +212,10 @@ class HuggingFaceTopKGenerator:
             model_successful = sum(1 for r in model_results if r['success'])
             print(f"  {model}: {len(model_results)} total, {model_successful} successful")
  
+        # Clean up GPU memory
+        gc.collect()
+        torch.cuda.empty_cache()
+        
         return list(results_by_model.values())[0] if results_by_model else None
 
 
@@ -219,34 +224,48 @@ def main():
     parser.add_argument('--models', nargs='+', help='Models to test')
     parser.add_argument('--retrievers', nargs='+', help='Retrievers to test')
     parser.add_argument('--annotations_file', default='data/annotations/label-studio-data-min_filtered.json')
-    parser.add_argument('--top_k', nargs='+', type=int, default=[1], help='List of top-k values to provide to each model (e.g. --top_k 1 3 5)')
+    parser.add_argument('--top_k', nargs='+', type=int, help='List of top-k values to provide to each model (e.g. --top_k 1 3 5)')
     parser.add_argument('--output_dir', default='src/generators/results/retrieval_pipeline', help='Directory containing end-to-end retrieval + generation pipeline results')
     parser.add_argument('--limit', type=int, help='Limit entries')
+    parser.add_argument('--is_test', action='store_true', help='Use test dataset and save to test results directory')
 
     args = parser.parse_args()
-
-    # Set default values in code (can still be overridden by command line)
+    
+    args.is_test = True 
     if not args.models:
-        args.models =  ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf'] #, 
+        # args.models =  ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf']
+        args.models =  ['Qwen/Qwen2.5-VL-3B-Instruct']
     if not args.retrievers:
         args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b','nomic-ai/colnomic-embed-multimodal-7b']
 
     data_option = 'annotated_pages' # 'all_pages'
 
     if not args.limit:
-        args.limit = None
+        args.limit = 2
 
     if not args.top_k:
         args.top_k = [1, 3]
 
+    # Update annotations file and output directory if is_test is set
+    if args.is_test:
+        args.annotations_file = 'data/annotations/label-studio-data-min_filtered_sampled.json'
+        args.output_dir = 'src/generators/results/test/retrieval_pipeline'
+
+    # Create the generator once to avoid reloading models
+    print("Loading models...")
+    generator = HuggingFaceTopKGenerator(None, args.annotations_file, models=args.models, top_k=1)
+
     for top_k in args.top_k:
         print(f"\n=== Running for top_k: {top_k} ===")
+        generator.top_k = top_k  # Update top_k for this iteration
+        
         for retriever in args.retrievers:
             print(f"\n=== Running for retriever: {retriever} ===")
-            data_file = f'data/retrieved_pages/{data_option}/{retriever.replace("/", "_")}_sorted_run.json'
+            data_file = f'src/retrievers/results/{data_option}/retrieved_pages/{retriever.replace("/", "_")}_sorted_run.json'
+            generator.data_file = data_file  # Update data_file for this iteration
+            
             retriever_subdir = os.path.join(args.output_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
             os.makedirs(retriever_subdir, exist_ok=True)
-            generator = HuggingFaceTopKGenerator(data_file, args.annotations_file, models=args.models, top_k=top_k)
             generator.generate_answers(args.models, args.limit, retriever_subdir)
 
 

@@ -187,17 +187,20 @@ def main():
     parser.add_argument('--models', nargs='+', help='Models to test')
     parser.add_argument('--retrievers', nargs='+', help='Retrievers to test')
     parser.add_argument('--annotations_file', default='data/annotations/label-studio-data-min_filtered.json')
-    parser.add_argument('--top_k', nargs='+', type=int, default=[1], help='List of top-k values to provide to each model (e.g. --top_k 1 3 5)')
+    parser.add_argument('--top_k', nargs='+', type=int, help='List of top-k values to provide to each model (e.g. --top_k 1 3 5)')
     parser.add_argument('--output_dir', default='src/generators/results/retrieval_pipeline', help='Directory containing end-to-end retrieval + generation pipeline results')
     parser.add_argument('--limit', type=int, help='Limit entries')
-    parser.add_argument('--use_fp16', default=True, action='store_true', help='Use FP16" precision for model inference')
+    parser.add_argument('--use_fp16', default=False, action='store_true', help='Use FP16" precision for model inference')
+    parser.add_argument('--is_test', action='store_true', help='Use test dataset and save to test results directory')
 
     args = parser.parse_args()
 
-    # Set default values in code (can still be overridden by command line)
+    args.is_test = True 
     if not args.models:
-        args.models = ['qwen2.5vl:3b', 'gemma3:4b-it',
-                       'qwen2.5vl:7b', 'gemma3:12b-it']
+        # args.models = ['qwen2.5vl:3b', 'gemma3:4b-it',
+        #                'qwen2.5vl:7b', 'gemma3:12b-it']
+        args.models =  ['qwen2.5vl:3b']
+        
         if args.use_fp16:
             print("Using FP16 precision for model inference")
             args.models = [f"{model}-fp16" for model in args.models]
@@ -209,10 +212,15 @@ def main():
     data_option = 'annotated_pages' # 'all_pages'
 
     if not args.limit:
-        args.limit = None
+        args.limit = 2
     
     if not args.top_k:
         args.top_k = [1, 3]
+    
+    # Update annotations file and output directory if is_test is set
+    if args.is_test:
+        args.annotations_file = 'data/annotations/label-studio-data-min_filtered_sampled.json'
+        args.output_dir = 'src/generators/results/test/retrieval_pipeline'
     
     try:
         ollama.list()
@@ -221,14 +229,21 @@ def main():
         print(f"✗ Ollama error: {e}")
         return
 
+    # Create the generator once to avoid reloading configurations
+    print("Setting up generator...")
+    generator = OllamaTopKGenerator(None, args.annotations_file, top_k=1)
+
     for top_k in args.top_k:
         print(f"\n=== Running for top_k: {top_k} ===")
+        generator.top_k = top_k  # Update top_k for this iteration
+        
         for retriever in args.retrievers:
             print(f"\n=== Running for retriever: {retriever} ===")
-            data_file = f'data/retrieved_pages/{data_option}/{retriever.replace("/", "_")}_sorted_run.json'
+            data_file = f'src/retrievers/results/{data_option}/retrieved_pages/{retriever.replace("/", "_")}_sorted_run.json'
+            generator.data_file = data_file  # Update data_file for this iteration
+            
             retriever_subdir = os.path.join(args.output_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
             os.makedirs(retriever_subdir, exist_ok=True)
-            generator = OllamaTopKGenerator(data_file, args.annotations_file, top_k=top_k)
             generator.generate_answers(args.models, args.limit, retriever_subdir)
 
 
