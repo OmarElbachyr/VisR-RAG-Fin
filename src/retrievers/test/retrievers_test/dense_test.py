@@ -1,7 +1,7 @@
 from retrievers.classes.sentence_transformer import SentenceTransformerRetriever
 from evaluation.classes.query_qrel_builder import QueryQrelsBuilder
 from evaluation.classes.document_provider import DocumentProvider
-from evaluation.utils.ir_dataset import export_ir_dataset
+# from evaluation.utils.ir_dataset import export_ir_dataset
 
 
 if __name__ == "__main__":
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     queries, qrels = QueryQrelsBuilder(csv_path).build()
     
     # Export IR dataset (one-time, centralized)
-    export_ir_dataset(csv_path, output_dir=f"ir_export_{data_option}", format_type="csv")
+    # export_ir_dataset(csv_path, output_dir=f"ir_export_{data_option}", format_type="csv")
     
     model_name = 'BAAI/bge-m3'  # "intfloat/multilingual-e5-large"
     retriever = SentenceTransformerRetriever(provider, model_name=model_name, is_instruct=False, device_map='cuda', batch_size=1)

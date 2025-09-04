@@ -147,7 +147,7 @@ def main():
                        help="Use test data (smaller dataset)")
     
     args = parser.parse_args()
-    args.is_test = False
+    args.is_test = True
     
     # Setup paths and load results
     csv_path, results_path, txt_results_path = setup_paths_and_results(args.data_option, args.is_test)

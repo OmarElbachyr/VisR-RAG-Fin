@@ -1,163 +1,163 @@
 {
     "docs_stats": {
-        "unique_pages": 99,
-        "total_chunks": 701,
-        "unique_queries": 288
+        "unique_pages": 100,
+        "total_chunks": 760,
+        "unique_queries": 293
     },
     "models": {
         "openai/clip-vit-base-patch32": {
             "metrics": {
                 "1": {
-                    "ndcg": 0.14583333333333334,
-                    "precision": 0.14583333333333334,
-                    "recall": 0.14583333333333334
+                    "ndcg": 0.15699658703071673,
+                    "precision": 0.15699658703071673,
+                    "recall": 0.15699658703071673
                 },
                 "3": {
-                    "ndcg": 0.21258960350942632,
-                    "precision": 0.08796296296296288,
-                    "recall": 0.2638888888888889
+                    "ndcg": 0.2003484191004401,
+                    "precision": 0.07736063708759951,
+                    "recall": 0.23208191126279865
                 },
                 "5": {
-                    "ndcg": 0.24143253720941202,
-                    "precision": 0.06666666666666654,
-                    "recall": 0.3333333333333333
+                    "ndcg": 0.2355998745388234,
+                    "precision": 0.06348122866894186,
+                    "recall": 0.3174061433447099
                 },
                 "10": {
-                    "ndcg": 0.2758172140236871,
-                    "precision": 0.0437499999999999,
-                    "recall": 0.4375
+                    "ndcg": 0.27335158252099423,
+                    "precision": 0.04368600682593846,
+                    "recall": 0.43686006825938567
                 },
                 "global": {
-                    "mrr": 0.24595485820474938,
-                    "rprec": 0.14583333333333334
+                    "mrr": 0.2438291390003431,
+                    "rprec": 0.15699658703071673
                 }
             },
-            "indexing_time": 3.668083429336548,
-            "retrieval_time": 0.24266839027404785,
+            "indexing_time": 4.53196120262146,
+            "retrieval_time": 0.14725327491760254,
             "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/openai_clip-vit-base-patch32_sorted_run.json"
         },
         "google/siglip-base-patch16-224": {
             "metrics": {
                 "1": {
-                    "ndcg": 0.24305555555555555,
-                    "precision": 0.24305555555555555,
-                    "recall": 0.24305555555555555
+                    "ndcg": 0.25597269624573377,
+                    "precision": 0.25597269624573377,
+                    "recall": 0.25597269624573377
                 },
                 "3": {
-                    "ndcg": 0.35838010808532084,
-                    "precision": 0.1469907407407408,
-                    "recall": 0.4409722222222222
+                    "ndcg": 0.35551547133106054,
+                    "precision": 0.143344709897611,
+                    "recall": 0.4300341296928328
                 },
                 "5": {
-                    "ndcg": 0.3937870705538267,
-                    "precision": 0.10555555555555529,
-                    "recall": 0.5277777777777778
+                    "ndcg": 0.3781362304578222,
+                    "precision": 0.09692832764505097,
+                    "recall": 0.48464163822525597
                 },
                 "10": {
-                    "ndcg": 0.4408477398739956,
-                    "precision": 0.06736111111111114,
-                    "recall": 0.6736111111111112
+                    "ndcg": 0.43468902280056565,
+                    "precision": 0.0658703071672355,
+                    "recall": 0.658703071672355
                 },
                 "global": {
-                    "mrr": 0.3817460065784471,
-                    "rprec": 0.24305555555555555
+                    "mrr": 0.38080460386509507,
+                    "rprec": 0.25597269624573377
                 }
             },
-            "indexing_time": 3.5723581314086914,
-            "retrieval_time": 0.1999812126159668,
+            "indexing_time": 3.9192779064178467,
+            "retrieval_time": 0.18002986907958984,
             "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/google_siglip-base-patch16-224_sorted_run.json"
         },
         "nomic-ai/nomic-embed-multimodal-3b": {
             "metrics": {
                 "1": {
-                    "ndcg": 0.84375,
-                    "precision": 0.84375,
-                    "recall": 0.84375
+                    "ndcg": 0.8805460750853242,
+                    "precision": 0.8805460750853242,
+                    "recall": 0.8805460750853242
                 },
                 "3": {
-                    "ndcg": 0.9220792443080382,
-                    "precision": 0.32407407407407324,
-                    "recall": 0.9722222222222222
+                    "ndcg": 0.9377926410897145,
+                    "precision": 0.3242320819112619,
+                    "recall": 0.9726962457337884
                 },
                 "5": {
-                    "ndcg": 0.9235746490235708,
-                    "precision": 0.19513888888888978,
-                    "recall": 0.9756944444444444
+                    "ndcg": 0.9430739080826774,
+                    "precision": 0.1972696245733798,
+                    "recall": 0.9863481228668942
                 },
                 "10": {
-                    "ndcg": 0.9305831551593595,
-                    "precision": 0.09965277777777826,
-                    "recall": 0.9965277777777778
+                    "ndcg": 0.9463937103337279,
+                    "precision": 0.09965870307167285,
+                    "recall": 0.9965870307167235
                 },
                 "global": {
-                    "mrr": 0.9087010115655948,
-                    "rprec": 0.84375
+                    "mrr": 0.9298323311121942,
+                    "rprec": 0.8805460750853242
                 }
             },
-            "indexing_time": 98.17018604278564,
-            "retrieval_time": 0.9089071750640869,
+            "indexing_time": 37.36198592185974,
+            "retrieval_time": 0.8271915912628174,
             "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/nomic-ai_nomic-embed-multimodal-3b_sorted_run.json"
         },
         "nomic-ai/nomic-embed-multimodal-7b": {
             "metrics": {
                 "1": {
-                    "ndcg": 0.8576388888888888,
-                    "precision": 0.8576388888888888,
-                    "recall": 0.8576388888888888
+                    "ndcg": 0.89419795221843,
+                    "precision": 0.89419795221843,
+                    "recall": 0.89419795221843
                 },
                 "3": {
-                    "ndcg": 0.9210876522197443,
-                    "precision": 0.320601851851851,
-                    "recall": 0.9618055555555556
+                    "ndcg": 0.944090768161874,
+                    "precision": 0.32536973833902066,
+                    "recall": 0.9761092150170648
                 },
                 "5": {
-                    "ndcg": 0.9315554852284725,
-                    "precision": 0.19722222222222316,
-                    "recall": 0.9861111111111112
+                    "ndcg": 0.9509914901340597,
+                    "precision": 0.1986348122866904,
+                    "recall": 0.9931740614334471
                 },
                 "10": {
-                    "ndcg": 0.9360903303426777,
-                    "precision": 0.10000000000000048,
+                    "ndcg": 0.9530547314415805,
+                    "precision": 0.1000000000000005,
                     "recall": 1.0
                 },
                 "global": {
-                    "mrr": 0.9147996582892416,
-                    "rprec": 0.8576388888888888
+                    "mrr": 0.9391069397042092,
+                    "rprec": 0.89419795221843
                 }
             },
-            "indexing_time": 189.45262384414673,
-            "retrieval_time": 1.72479248046875,
+            "indexing_time": 46.017401933670044,
+            "retrieval_time": 1.3938567638397217,
             "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/nomic-ai_nomic-embed-multimodal-7b_sorted_run.json"
         },
         "Alibaba-NLP/gme-Qwen2-VL-7B-Instruct": {
             "metrics": {
                 "1": {
-                    "ndcg": 0.875,
-                    "precision": 0.875,
-                    "recall": 0.875
+                    "ndcg": 0.8873720136518771,
+                    "precision": 0.8873720136518771,
+                    "recall": 0.8873720136518771
                 },
                 "3": {
-                    "ndcg": 0.9340673067088314,
-                    "precision": 0.32407407407407324,
-                    "recall": 0.9722222222222222
+                    "ndcg": 0.9406777988785977,
+                    "precision": 0.32536973833902066,
+                    "recall": 0.9761092150170648
                 },
                 "5": {
-                    "ndcg": 0.9398967597694381,
-                    "precision": 0.19722222222222316,
-                    "recall": 0.9861111111111112
+                    "ndcg": 0.9465573423335247,
+                    "precision": 0.1979522184300351,
+                    "recall": 0.9897610921501706
                 },
                 "10": {
-                    "ndcg": 0.9444817259986493,
-                    "precision": 0.10000000000000048,
+                    "ndcg": 0.9499381290779114,
+                    "precision": 0.1000000000000005,
                     "recall": 1.0
                 },
                 "global": {
-                    "mrr": 0.9259589947089947,
-                    "rprec": 0.875
+                    "mrr": 0.9331762283980717,
+                    "rprec": 0.8873720136518771
                 }
             },
-            "indexing_time": 370.01705384254456,
-            "retrieval_time": 2.210174560546875,
+            "indexing_time": 72.8333032131195,
+            "retrieval_time": 2.0133492946624756,
             "sorted_run_path": "src/retrievers/results/annotated_pages_test/retrieved_pages/Alibaba-NLP_gme-Qwen2-VL-7B-Instruct_sorted_run.json"
         }
     }

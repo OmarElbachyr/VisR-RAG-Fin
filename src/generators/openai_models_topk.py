@@ -1,60 +1,28 @@
 #!/usr/bin/env python3
-import subprocess
-import sys
-
-# Install required transformers version
-def ensure_transformers_version():
-    """Ensure transformers==4.53.3 is installed"""
-    try:
-        import transformers
-        if transformers.__version__ != "4.53.3":
-            print(f"Current transformers version: {transformers.__version__}")
-            print("Installing transformers==4.53.3...")
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==4.53.3"])
-            print("Successfully installed transformers==4.53.3")
-            # Need to restart to use new version
-            print("Please restart the script to use the new transformers version.")
-            sys.exit(0)
-        else:
-            print(f"Using transformers version: {transformers.__version__}")
-    except ImportError:
-        print("Installing transformers==4.53.3...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==4.53.3"])
-        print("Successfully installed transformers==4.53.3")
-
-# Ensure correct transformers version before proceeding
-ensure_transformers_version()
-
 import json
 import time
 import argparse
 import os
-import gc
-from transformers import pipeline
+import base64
+from openai import OpenAI
 from PIL import Image
-import torch
 from dotenv import load_dotenv
  
 load_dotenv()
-HF_TOKEN = os.getenv('HF_TOKEN')
 
 
-class HuggingFaceTopKGenerator:
+class OpenAITopKGenerator:
     def __init__(self, data_file, annotations_file, models, top_k=1):
         self.data_file = data_file
         self.annotations_file = annotations_file
         self.top_k = top_k
-        self.model_pipelines = { #FIXME:this code works with transformers==4.53.3 but could break colpali code that uses (4.51.3)  
-            model: pipeline(
-                task="image-text-to-text",
-                model=model,
-                device="cuda",
-                torch_dtype=torch.float16,
-                token=HF_TOKEN,
-                trust_remote_code=True,
-            )
-            for model in models
-        } 
+        self.models = models
+        self.client = OpenAI()
+        
+    def encode_image(self, image_path):
+        """Encode image to base64 for OpenAI API"""
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
         
     def load_data(self):
         with open(self.data_file, 'r', encoding='utf-8') as f:
@@ -71,57 +39,62 @@ class HuggingFaceTopKGenerator:
     
     def query_model(self, model, question, images):
         start_time = time.time()
-        pipe = self.model_pipelines[model]
+        
         try:
+            # Encode all images
+            base64_images = []
+            for image_path in images:
+                base64_image = self.encode_image(image_path)
+                base64_images.append(base64_image)
+            
             image_count = len(images)
             
-            prompt = f"""You are a financial analyst expert at analyzing financial docuemnts.
+            prompt = f"""You are a financial analyst expert at analyzing financial documents.
 
-    You'll be given:
-    • Question: "{question}"
-    • Context: {image_count} PDF page images that may contain the answer
+You'll be given:
+• Question: "{question}"
+• Context: {image_count} PDF page images that may contain the answer
 
-    Instructions:
-    1. Carefully examine all provided images for relevant information
-    2. Answer the question using **only** information found in the images
-    3. Be precise and concise in your response
-    4. If the answer cannot be found in any of the images, respond exactly: "I don't know"
-    5. Do not make assumptions or use external knowledge
-    6. If information spans multiple images, synthesize it appropriately
+Instructions:
+1. Carefully examine all provided images for relevant information
+2. Answer the question using **only** information found in the images
+3. Be precise and concise in your response
+4. If the answer cannot be found in any of the images, respond exactly: "I don't know"
+5. Do not make assumptions or use external knowledge
+6. If information spans multiple images, synthesize it appropriately
 
-    Question: {question}"""
+Question: {question}"""
             
-            messages = [
-                {
-                    "role": "user",
-                    "content": (
-                        [{"type": "image"} for _ in images]
-                        + [{"type": "text", "text": prompt}]
-                    )
-                }
-            ]
-
-            with torch.inference_mode(), torch.autocast("cuda"):
-                output = pipe(text=messages, images=images, temperature=0.1, max_new_tokens=512)
-
-            # normalize whatever shape generated_text has
-            gen = output[0].get("generated_text", output[0])
-            if isinstance(gen, list):
-                last = gen[-1]
-                if isinstance(last, dict) and "content" in last:
-                    response = last["content"]
-                else:
-                    response = last
-            elif isinstance(gen, dict):
-                response = gen.get("content", gen.get("message", {}).get("content", str(gen)))
-            else:
-                response = gen
-
+            # Build content array with text prompt and all images
+            content = [{"type": "text", "text": prompt}]
+            for base64_image in base64_images:
+                content.append({
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{base64_image}"
+                    }
+                })
+            
+            response = self.client.chat.completions.create(
+                model=model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": content
+                    }
+                ],
+                max_tokens=512,
+                temperature=0.1
+            )
+            
+            response_text = response.choices[0].message.content
+           
             return {
                 'success': True,
-                'response': response.strip() if isinstance(response, str) else str(response),
+                'response': response_text.strip() if response_text else "",
                 'time': time.time() - start_time
             }
+       
         except Exception as e:
             return {
                 'success': False,
@@ -129,7 +102,6 @@ class HuggingFaceTopKGenerator:
                 'time': time.time() - start_time,
                 'error': str(e)
             }
-
 
     def generate_answers(self, models, limit=None, output_dir="src/generators/results/retrieval_pipeline"):
         print(f"Testing models: {models}")
@@ -154,8 +126,16 @@ class HuggingFaceTopKGenerator:
             top_k_images = list(results_dict.keys())[:self.top_k]
             images = [self.get_image_path(img) for img in top_k_images]
 
-            if len(images) != self.top_k:
-                print(f"Not enough images for top-k (got {len(images)}, need {self.top_k}), skipping entry")
+            # Check if all images exist
+            existing_images = []
+            for image_path in images:
+                if os.path.exists(image_path):
+                    existing_images.append(image_path)
+                else:
+                    print(f"Image not found: {image_path}")
+
+            if len(existing_images) != self.top_k:
+                print(f"Not enough images for top-k (got {len(existing_images)}, need {self.top_k}), skipping entry")
                 continue
 
             # Find the ground truth answer and metadata in annotations
@@ -200,7 +180,7 @@ class HuggingFaceTopKGenerator:
                 question = entry.get('query', '')
                 print(f"    {question[:50]}...")
 
-                result = self.query_model(model, question, images)
+                result = self.query_model(model, question, existing_images)
 
                 results_by_model[model].append({
                     'model': model,
@@ -219,10 +199,13 @@ class HuggingFaceTopKGenerator:
                     'language': language
                 })
                 
+                # Add small delay to respect rate limits
+                time.sleep(0.1)
+        
         # Save results - separate file for each model
         for model, model_results in results_by_model.items():
             model_safe = model.replace(":", "-").replace(".", "-").replace("/", "-").replace("_", "-")
-            output_file = f"{output_dir}/hf_top-k_{model_safe}.json"
+            output_file = f"{output_dir}/openai_top-k_{model_safe}.json"
             
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(model_results, f, indent=2, ensure_ascii=False)
@@ -237,10 +220,6 @@ class HuggingFaceTopKGenerator:
         for model, model_results in results_by_model.items():
             model_successful = sum(1 for r in model_results if r['success'])
             print(f"  {model}: {len(model_results)} total, {model_successful} successful")
- 
-        # Clean up GPU memory
-        gc.collect()
-        torch.cuda.empty_cache()
         
         return list(results_by_model.values())[0] if results_by_model else None
 
@@ -259,15 +238,14 @@ def main():
     
     args.is_test = True 
     if not args.models:
-        # args.models =  ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf']
-        args.models =  ['Qwen/Qwen2.5-VL-7B-Instruct']
+        args.models = ['gpt-4o', 'gpt-4o-mini']
     if not args.retrievers:
         args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b','nomic-ai/colnomic-embed-multimodal-7b']
 
     data_option = 'annotated_pages_test' if args.is_test else 'annotated_pages'
 
     if not args.limit:
-        args.limit = None
+        args.limit = 1
 
     if not args.top_k:
         args.top_k = [1, 3]
@@ -277,18 +255,15 @@ def main():
         args.annotations_file = 'data/annotations/label-studio-data-min_filtered_sampled.json'
         args.output_dir = 'src/generators/results/test/retrieval_pipeline'
 
-    # Create the generator once to avoid reloading models
-    print("Loading models...")
-    generator = HuggingFaceTopKGenerator(None, args.annotations_file, models=args.models, top_k=1)
-
     for top_k in args.top_k:
         print(f"\n=== Running for top_k: {top_k} ===")
-        generator.top_k = top_k  # Update top_k for this iteration
         
         for retriever in args.retrievers:
             print(f"\n=== Running for retriever: {retriever} ===")
             data_file = f'src/retrievers/results/{data_option}/retrieved_pages/{retriever.replace("/", "_")}_sorted_run.json'
-            generator.data_file = data_file  # Update data_file for this iteration
+            
+            # Create the generator for this specific configuration
+            generator = OpenAITopKGenerator(data_file, args.annotations_file, models=args.models, top_k=top_k)
             
             retriever_subdir = os.path.join(args.output_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
             os.makedirs(retriever_subdir, exist_ok=True)

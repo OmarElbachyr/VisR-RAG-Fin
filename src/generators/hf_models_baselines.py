@@ -1,4 +1,30 @@
 #!/usr/bin/env python3
+import subprocess
+import sys
+
+# Install required transformers version
+def ensure_transformers_version():
+    """Ensure transformers==4.53.3 is installed"""
+    try:
+        import transformers
+        if transformers.__version__ != "4.53.3":
+            print(f"Current transformers version: {transformers.__version__}")
+            print("Installing transformers==4.53.3...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==4.53.3"])
+            print("Successfully installed transformers==4.53.3")
+            # Need to restart to use new version
+            print("Please restart the script to use the new transformers version.")
+            sys.exit(0)
+        else:
+            print(f"Using transformers version: {transformers.__version__}")
+    except ImportError:
+        print("Installing transformers==4.53.3...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==4.53.3"])
+        print("Successfully installed transformers==4.53.3")
+
+# Ensure correct transformers version before proceeding
+ensure_transformers_version()
+
 import json
 import time
 import argparse
@@ -210,11 +236,10 @@ def main():
    
     args.is_test = True 
     if not args.models:
-        # args.models = ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf']
-        args.models = ['Qwen/Qwen2.5-VL-7B-Instruct']
+        args.models = ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf', 'Qwen/Qwen2.5-VL-3B-Instruct', 'Qwen/Qwen2.5-VL-7B-Instruct']
        
     if not args.limit:
-        args.limit = 2
+        args.limit = None
     
     # Update data file and output directory if is_test is set
     if args.is_test:

@@ -1,5 +1,5 @@
 Provider Stats:
-{'unique_pages': 99, 'total_chunks': 701, 'unique_queries': 288}
+{'unique_pages': 100, 'total_chunks': 760, 'unique_queries': 293}
 ================================================================================
 
 
@@ -7,13 +7,13 @@ Testing openai/clip-vit-base-patch32...
 Evaluating run with ir_measures...
 
 === Evaluation Results ===
-K=1   NDCG:0.1458  P:0.1458  R:0.1458
-K=3   NDCG:0.2126  P:0.0880  R:0.2639
-K=5   NDCG:0.2414  P:0.0667  R:0.3333
-K=10  NDCG:0.2758  P:0.0437  R:0.4375
-GLOBAL MRR:0.2460  Rprec:0.1458
-Indexing time: 3.6179s
-Retrieval time: 0.2875s
+K=1   NDCG:0.1570  P:0.1570  R:0.1570
+K=3   NDCG:0.2003  P:0.0774  R:0.2321
+K=5   NDCG:0.2356  P:0.0635  R:0.3174
+K=10  NDCG:0.2734  P:0.0437  R:0.4369
+GLOBAL MRR:0.2438  Rprec:0.1570
+Indexing time: 4.5320s
+Retrieval time: 0.1473s
 Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/openai_clip-vit-base-patch32_sorted_run.json
 --------------------------------------------------------------------------------
 
@@ -21,109 +21,13 @@ Testing google/siglip-base-patch16-224...
 Evaluating run with ir_measures...
 
 === Evaluation Results ===
-K=1   NDCG:0.2431  P:0.2431  R:0.2431
-K=3   NDCG:0.3584  P:0.1470  R:0.4410
-K=5   NDCG:0.3938  P:0.1056  R:0.5278
-K=10  NDCG:0.4408  P:0.0674  R:0.6736
-GLOBAL MRR:0.3817  Rprec:0.2431
-Indexing time: 4.0258s
-Retrieval time: 0.2029s
-Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/google_siglip-base-patch16-224_sorted_run.json
---------------------------------------------------------------------------------
-Provider Stats:
-{'unique_pages': 99, 'total_chunks': 701, 'unique_queries': 288}
-================================================================================
-
-
-Testing openai/clip-vit-base-patch32...
-Evaluating run with ir_measures...
-
-=== Evaluation Results ===
-K=1   NDCG:0.1458  P:0.1458  R:0.1458
-K=3   NDCG:0.2126  P:0.0880  R:0.2639
-K=5   NDCG:0.2414  P:0.0667  R:0.3333
-K=10  NDCG:0.2758  P:0.0437  R:0.4375
-GLOBAL MRR:0.2460  Rprec:0.1458
-Indexing time: 3.6556s
-Retrieval time: 0.2427s
-Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/openai_clip-vit-base-patch32_sorted_run.json
---------------------------------------------------------------------------------
-
-Testing google/siglip-base-patch16-224...
-Evaluating run with ir_measures...
-
-=== Evaluation Results ===
-K=1   NDCG:0.2431  P:0.2431  R:0.2431
-K=3   NDCG:0.3584  P:0.1470  R:0.4410
-K=5   NDCG:0.3938  P:0.1056  R:0.5278
-K=10  NDCG:0.4408  P:0.0674  R:0.6736
-GLOBAL MRR:0.3817  Rprec:0.2431
-Indexing time: 3.6166s
-Retrieval time: 0.2005s
-Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/google_siglip-base-patch16-224_sorted_run.json
---------------------------------------------------------------------------------
-Provider Stats:
-{'unique_pages': 99, 'total_chunks': 701, 'unique_queries': 288}
-================================================================================
-
-
-Testing openai/clip-vit-base-patch32...
-Evaluating run with ir_measures...
-
-=== Evaluation Results ===
-K=1   NDCG:0.1458  P:0.1458  R:0.1458
-K=3   NDCG:0.2126  P:0.0880  R:0.2639
-K=5   NDCG:0.2414  P:0.0667  R:0.3333
-K=10  NDCG:0.2758  P:0.0437  R:0.4375
-GLOBAL MRR:0.2460  Rprec:0.1458
-Indexing time: 3.6789s
-Retrieval time: 0.2168s
-Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/openai_clip-vit-base-patch32_sorted_run.json
---------------------------------------------------------------------------------
-
-Testing google/siglip-base-patch16-224...
-Evaluating run with ir_measures...
-
-=== Evaluation Results ===
-K=1   NDCG:0.2431  P:0.2431  R:0.2431
-K=3   NDCG:0.3584  P:0.1470  R:0.4410
-K=5   NDCG:0.3938  P:0.1056  R:0.5278
-K=10  NDCG:0.4408  P:0.0674  R:0.6736
-GLOBAL MRR:0.3817  Rprec:0.2431
-Indexing time: 3.5666s
-Retrieval time: 0.2000s
-Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/google_siglip-base-patch16-224_sorted_run.json
---------------------------------------------------------------------------------
-Provider Stats:
-{'unique_pages': 99, 'total_chunks': 701, 'unique_queries': 288}
-================================================================================
-
-
-Testing openai/clip-vit-base-patch32...
-Evaluating run with ir_measures...
-
-=== Evaluation Results ===
-K=1   NDCG:0.1458  P:0.1458  R:0.1458
-K=3   NDCG:0.2126  P:0.0880  R:0.2639
-K=5   NDCG:0.2414  P:0.0667  R:0.3333
-K=10  NDCG:0.2758  P:0.0437  R:0.4375
-GLOBAL MRR:0.2460  Rprec:0.1458
-Indexing time: 3.6681s
-Retrieval time: 0.2427s
-Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/openai_clip-vit-base-patch32_sorted_run.json
---------------------------------------------------------------------------------
-
-Testing google/siglip-base-patch16-224...
-Evaluating run with ir_measures...
-
-=== Evaluation Results ===
-K=1   NDCG:0.2431  P:0.2431  R:0.2431
-K=3   NDCG:0.3584  P:0.1470  R:0.4410
-K=5   NDCG:0.3938  P:0.1056  R:0.5278
-K=10  NDCG:0.4408  P:0.0674  R:0.6736
-GLOBAL MRR:0.3817  Rprec:0.2431
-Indexing time: 3.5724s
-Retrieval time: 0.2000s
+K=1   NDCG:0.2560  P:0.2560  R:0.2560
+K=3   NDCG:0.3555  P:0.1433  R:0.4300
+K=5   NDCG:0.3781  P:0.0969  R:0.4846
+K=10  NDCG:0.4347  P:0.0659  R:0.6587
+GLOBAL MRR:0.3808  Rprec:0.2560
+Indexing time: 3.9193s
+Retrieval time: 0.1800s
 Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/google_siglip-base-patch16-224_sorted_run.json
 --------------------------------------------------------------------------------
 
@@ -131,13 +35,13 @@ Testing nomic-ai/nomic-embed-multimodal-3b...
 Evaluating run with ir_measures...
 
 === Evaluation Results ===
-K=1   NDCG:0.8438  P:0.8438  R:0.8438
-K=3   NDCG:0.9221  P:0.3241  R:0.9722
-K=5   NDCG:0.9236  P:0.1951  R:0.9757
-K=10  NDCG:0.9306  P:0.0997  R:0.9965
-GLOBAL MRR:0.9087  Rprec:0.8438
-Indexing time: 98.1702s
-Retrieval time: 0.9089s
+K=1   NDCG:0.8805  P:0.8805  R:0.8805
+K=3   NDCG:0.9378  P:0.3242  R:0.9727
+K=5   NDCG:0.9431  P:0.1973  R:0.9863
+K=10  NDCG:0.9464  P:0.0997  R:0.9966
+GLOBAL MRR:0.9298  Rprec:0.8805
+Indexing time: 37.3620s
+Retrieval time: 0.8272s
 Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/nomic-ai_nomic-embed-multimodal-3b_sorted_run.json
 --------------------------------------------------------------------------------
 
@@ -145,13 +49,13 @@ Testing nomic-ai/nomic-embed-multimodal-7b...
 Evaluating run with ir_measures...
 
 === Evaluation Results ===
-K=1   NDCG:0.8576  P:0.8576  R:0.8576
-K=3   NDCG:0.9211  P:0.3206  R:0.9618
-K=5   NDCG:0.9316  P:0.1972  R:0.9861
-K=10  NDCG:0.9361  P:0.1000  R:1.0000
-GLOBAL MRR:0.9148  Rprec:0.8576
-Indexing time: 189.4526s
-Retrieval time: 1.7248s
+K=1   NDCG:0.8942  P:0.8942  R:0.8942
+K=3   NDCG:0.9441  P:0.3254  R:0.9761
+K=5   NDCG:0.9510  P:0.1986  R:0.9932
+K=10  NDCG:0.9531  P:0.1000  R:1.0000
+GLOBAL MRR:0.9391  Rprec:0.8942
+Indexing time: 46.0174s
+Retrieval time: 1.3939s
 Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/nomic-ai_nomic-embed-multimodal-7b_sorted_run.json
 --------------------------------------------------------------------------------
 
@@ -159,12 +63,12 @@ Testing Alibaba-NLP/gme-Qwen2-VL-7B-Instruct...
 Evaluating run with ir_measures...
 
 === Evaluation Results ===
-K=1   NDCG:0.8750  P:0.8750  R:0.8750
-K=3   NDCG:0.9341  P:0.3241  R:0.9722
-K=5   NDCG:0.9399  P:0.1972  R:0.9861
-K=10  NDCG:0.9445  P:0.1000  R:1.0000
-GLOBAL MRR:0.9260  Rprec:0.8750
-Indexing time: 370.0171s
-Retrieval time: 2.2102s
+K=1   NDCG:0.8874  P:0.8874  R:0.8874
+K=3   NDCG:0.9407  P:0.3254  R:0.9761
+K=5   NDCG:0.9466  P:0.1980  R:0.9898
+K=10  NDCG:0.9499  P:0.1000  R:1.0000
+GLOBAL MRR:0.9332  Rprec:0.8874
+Indexing time: 72.8333s
+Retrieval time: 2.0133s
 Sorted run saved to: src/retrievers/results/annotated_pages_test/retrieved_pages/Alibaba-NLP_gme-Qwen2-VL-7B-Instruct_sorted_run.json
 --------------------------------------------------------------------------------
