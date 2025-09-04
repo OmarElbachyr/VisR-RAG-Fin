@@ -5,9 +5,9 @@ import argparse
 import os
 import base64
 import anthropic
-from PIL import Image
 from dotenv import load_dotenv
- 
+from generators.prompt_utils import load_prompt
+
 load_dotenv()
 
 
@@ -67,21 +67,9 @@ class ClaudeTopKGenerator:
             
             image_count = len(images)
             
-            prompt = f"""You are a financial analyst expert at analyzing financial documents.
-
-You'll be given:
-• Question: "{question}"
-• Context: {image_count} PDF page images that may contain the answer
-
-Instructions:
-1. Carefully examine all provided images for relevant information
-2. Answer the question using **only** information found in the images
-3. Be precise and concise in your response
-4. If the answer cannot be found in any of the images, respond exactly: "I don't know"
-5. Do not make assumptions or use external knowledge
-6. If information spans multiple images, synthesize it appropriately
-
-Question: {question}"""
+            # Load prompt template and format it
+            prompt_template = load_prompt("topk_prompt.txt")
+            prompt = prompt_template.format(question=question, image_count=image_count)
             
             # Build content array with all images first, then text prompt
             content = encoded_images + [

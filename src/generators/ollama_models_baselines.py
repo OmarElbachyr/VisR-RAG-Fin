@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import ollama
 from datetime import datetime
+from .prompt_utils import load_prompt
 
 class OllamaBaselinesGenerator:
     def __init__(self, data_file="data/annotations/label-studio-data-min_filtered.json"):
@@ -23,21 +24,9 @@ class OllamaBaselinesGenerator:
     def query_model(self, model, question, image_path):
         start_time = time.time()
         try:
-            prompt = f"""You are a financial analyst expert at analyzing financial docuemnts.
-
-You'll be given:
-• Question: "{question}"
-• Context: 1 PDF page images that may contain the answer
-
-Instructions:
-1. Carefully examine all provided images for relevant information
-2. Answer the question using **only** information found in the images
-3. Be precise and concise in your response
-4. If the answer cannot be found in any of the images, respond exactly: "I don't know"
-5. Do not make assumptions or use external knowledge
-6. If information spans multiple images, synthesize it appropriately
-
-Question: {question}"""
+            # Load prompt template and format it
+            prompt_template = load_prompt("baseline_prompt.txt")
+            prompt = prompt_template.format(question=question)
 
             response = ollama.chat(
                 model=model,

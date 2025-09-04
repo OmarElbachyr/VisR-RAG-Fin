@@ -34,6 +34,7 @@ from transformers import pipeline
 from PIL import Image
 import torch
 from dotenv import load_dotenv
+from generators.prompt_utils import load_prompt
  
 load_dotenv()
 HF_TOKEN = os.getenv('HF_TOKEN')
@@ -44,7 +45,7 @@ class HuggingFaceTopKGenerator:
         self.data_file = data_file
         self.annotations_file = annotations_file
         self.top_k = top_k
-        self.model_pipelines = { #FIXME:this code works with transformers==4.53.3 but could break colpali code that uses (4.51.3)  
+        self.model_pipelines = {
             model: pipeline(
                 task="image-text-to-text",
                 model=model,
@@ -75,21 +76,9 @@ class HuggingFaceTopKGenerator:
         try:
             image_count = len(images)
             
-            prompt = f"""You are a financial analyst expert at analyzing financial docuemnts.
-
-    You'll be given:
-    • Question: "{question}"
-    • Context: {image_count} PDF page images that may contain the answer
-
-    Instructions:
-    1. Carefully examine all provided images for relevant information
-    2. Answer the question using **only** information found in the images
-    3. Be precise and concise in your response
-    4. If the answer cannot be found in any of the images, respond exactly: "I don't know"
-    5. Do not make assumptions or use external knowledge
-    6. If information spans multiple images, synthesize it appropriately
-
-    Question: {question}"""
+            # Load prompt template and format it
+            prompt_template = load_prompt("topk_prompt.txt")
+            prompt = prompt_template.format(question=question, image_count=image_count)
             
             messages = [
                 {

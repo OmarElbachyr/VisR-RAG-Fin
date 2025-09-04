@@ -5,8 +5,8 @@ import argparse
 import os
 import base64
 from openai import OpenAI
-from PIL import Image
 from dotenv import load_dotenv
+from generators.prompt_utils import load_prompt
  
 load_dotenv()
 
@@ -37,20 +37,9 @@ class OpenAIBaselinesGenerator:
             # Encode the image
             base64_image = self.encode_image(image_path)
             
-            prompt = f"""You are a financial analyst expert at analyzing financial documents.
-
-You'll be given:
-• Question: "{question}"
-• Context: 1 PDF page image that may contain the answer
-
-Instructions:
-1. Carefully examine the provided image for relevant information
-2. Answer the question using **only** information found in the image
-3. Be precise and concise in your response
-4. If the answer cannot be found in the image, respond exactly: "I don't know"
-5. Do not make assumptions or use external knowledge
-
-Question: {question}"""
+            # Load prompt template and format it
+            prompt_template = load_prompt("baseline_prompt.txt")
+            prompt = prompt_template.format(question=question)
             
             response = self.client.chat.completions.create(
                 model=model,
