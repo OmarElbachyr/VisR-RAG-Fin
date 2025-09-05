@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import ollama
 from datetime import datetime
-from .prompt_utils import load_prompt
+from generators.prompt_utils import load_prompt
 
 class OllamaBaselinesGenerator:
     def __init__(self, data_file="data/annotations/label-studio-data-min_filtered.json"):
@@ -123,21 +123,22 @@ def main():
     parser.add_argument('--data_file', default='data/annotations/label-studio-data-min_filtered.json')
     parser.add_argument('--output_dir', default='src/generators/results/baselines')
     parser.add_argument('--limit', type=int, help='Limit entries')
-    parser.add_argument('--use_fp16', default=True, action='store_true', help='Use FP16" precision for model inference')
+    parser.add_argument('--is_test', action='store_true', help='Use test dataset and save to test results directory')
     
     args = parser.parse_args()
     
+    args.is_test = True
     # Set default values in code (can still be overridden by command line)
     if not args.models:
-        args.models = ['qwen2.5vl:3b', 'gemma3:4b-it',
-                       'qwen2.5vl:7b', 'gemma3:12b-it']
-        if args.use_fp16:
-            print("Using FP16 precision for model inference")
-            args.models = [f"{model}-fp16" for model in args.models]
-            args.output_dir = f"{args.output_dir}/fp16"
+        args.models = ['qwen2.5vl:3b-fp16', 'qwen2.5vl:7b-fp16'] # ['qwen2.5vl:3b-fp16', 'qwen2.5vl:7b-fp16', 'qwen2.5vl:32b-fp16']
         
     if not args.limit:
         args.limit = None
+    
+    # Update data file and output directory if is_test is set
+    if args.is_test:
+        args.data_file = 'data/annotations/label-studio-data-min_filtered_sampled.json'
+        args.output_dir = 'src/generators/results/test/baselines'
     
     try:
         ollama.list()

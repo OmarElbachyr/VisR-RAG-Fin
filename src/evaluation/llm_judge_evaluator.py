@@ -3,7 +3,6 @@ import json
 import time
 import argparse
 import os
-from pathlib import Path
 import ollama
 import openai
 
@@ -72,7 +71,7 @@ Proposed Answer: {predicted_answer}"""
 
 
 class ResultsEvaluator:
-    def evaluate_existing_answers(self, judge, results_dir, output_dir="src/results/judged", limit=None, models=None):
+    def evaluate_existing_answers(self, judge, results_dir, output_dir="src/generators/eval", limit=None, models=None):
         print(f"Judge model: {judge.judge_model if not judge.use_openai else judge.openai_model}")
 
         norm_models = None
@@ -174,7 +173,8 @@ def main():
     parser.add_argument('--evaluate_baselines', action='store_true', help='Evaluate baseline models')
     parser.add_argument('--retrievers', nargs='+', help='Retrievers to test')
     parser.add_argument('--top_k', nargs='+', type=int, help='List of top-k values to evaluate (e.g. --top_k 1 3 5)')
-    parser.add_argument('--output_dir', default='src/results')
+    parser.add_argument('--output_dir', default='src/generators/eval')
+    parser.add_argument('--is_test', action='store_true', help='Use test results and output to test directory')
     parser.add_argument('--baseline_results_dir', default='src/generators/results/baselines', help='Directory containing baseline results')
     parser.add_argument('--pipeline_results_dir', default='src/generators/results/retrieval_pipeline', help='Directory containing end-to-end retrieval + generation pipeline results')
     parser.add_argument('--limit', type=int, help='Limit entries')
@@ -183,16 +183,24 @@ def main():
     parser.add_argument('--openai_judge_model', default='gpt-4', help='OpenAI judge model')
     args = parser.parse_args()
 
+    args.is_test = True  # Set to True for testing purposes
     if not args.models:
-        args.models = ['gemma3:4b-it-q4_K_M', 'qwen2.5vl:3b',
-                       'qwen2.5vl:7b', 'gemma3:12b-it-q4_K_M',
-                       'OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf']
+        # args.models = ['gemma3:4b-it-q4_K_M', 'qwen2.5vl:3b',
+        #                'qwen2.5vl:7b', 'gemma3:12b-it-q4_K_M',
+        #                'OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf']
+        args.models = ['Qwen/Qwen2.5-VL-7B-Instruct']
     if not args.retrievers:
         args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b', 'nomic-ai/colnomic-embed-multimodal-7b']
     if not args.limit:
         args.limit = None
     if not args.top_k:
         args.top_k = [1, 3]
+
+    # Adjust paths based on is_test flag
+    if args.is_test:
+        args.output_dir = os.path.join(args.output_dir, 'test')
+        args.baseline_results_dir = 'src/generators/results/test/baselines'
+        args.pipeline_results_dir = 'src/generators/results/test/retrieval_pipeline'
 
     try:
         ollama.list()
@@ -219,7 +227,7 @@ def main():
     if args.evaluate_baselines:
         # Baseline: evaluate each VLM (model) separately, ignore retrievers
         results_dir = args.baseline_results_dir
-        output_dir = os.path.join(args.output_dir, 'judged', 'baselines')
+        output_dir = os.path.join(args.output_dir, 'baselines')
         os.makedirs(results_dir, exist_ok=True)
         os.makedirs(output_dir, exist_ok=True)
         
@@ -238,7 +246,7 @@ def main():
             for retriever in args.retrievers:
                 print(f"\n=== Evaluating for retriever: {retriever} ===")
                 results_dir = os.path.join(args.pipeline_results_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
-                output_subdir = os.path.join(args.output_dir, 'judged', f'top_k_{top_k}', retriever.replace("/", "_"))
+                output_subdir = os.path.join(args.output_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
                 
                 if not os.path.exists(results_dir):
                     print(f"Results directory not found: {results_dir}")

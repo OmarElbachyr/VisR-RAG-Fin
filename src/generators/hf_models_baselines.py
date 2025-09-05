@@ -57,7 +57,7 @@ class HFBaselinesGenerator:
                 task="image-text-to-text",
                 model=model,
                 device="cuda",
-                torch_dtype=torch.float16,
+                torch_dtype="auto",
                 token=HF_TOKEN,
                 trust_remote_code=True,
             )
@@ -225,10 +225,11 @@ def main():
    
     args.is_test = True 
     if not args.models:
-        args.models = ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf', 'Qwen/Qwen2.5-VL-3B-Instruct', 'Qwen/Qwen2.5-VL-7B-Instruct']
+        args.models = ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf'] #, don't work: 'Qwen/Qwen2.5-VL-3B-Instruct', 'Qwen/Qwen2.5-VL-7B-Instruct']
+        args.models = ['google/gemma-3-12b-it']
        
     if not args.limit:
-        args.limit = None
+        args.limit = 1
     
     # Update data file and output directory if is_test is set
     if args.is_test:
