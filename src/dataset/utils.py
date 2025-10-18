@@ -20,6 +20,21 @@ def _norm(s):
     return " ".join(s.split()).strip().lower()
 
 def filter_qa_pairs(annotation_path):
+    """
+    Filters QA annotations to keep only high-quality pairs.
+    
+    - Keeps only QA pairs marked as 'relevant' and 'correct'
+    - Replaces question and answer with last annotated version (when edited in Label Studio)
+    - Adds question_id and other useful attributes (evidence, type) to each QA pair
+    - Saves filtered data to a new file with '_filtered' suffix
+    - Preserves original q<i>, a<i>, etc. fields for reference
+    
+    Args:
+        annotation_path: Path to the JSON annotation file
+        
+    Returns:
+        List of filtered records with valid QA pairs
+    """
     with open(annotation_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -100,6 +115,6 @@ def filter_qa_pairs(annotation_path):
         json.dump(cleaned, f, indent=2)
 
     total_valid = sum(len(rec.get("qa_pairs", [])) for rec in cleaned)
-    print(f"annotation cleaned: {cleaned_annotation_path} records: {len(data)} kept QA pairs: {total_valid}")
+    print(f"annotation cleaned: {cleaned_annotation_path} records: {len(data)} → {len(cleaned)} kept, QA pairs: {total_valid}")
 
     return cleaned
