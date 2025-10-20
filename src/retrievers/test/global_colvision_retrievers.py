@@ -14,7 +14,7 @@ from retrievers.classes.colsmol import ColSmol
 from evaluation.classes.document_provider import DocumentProvider
 from evaluation.classes.query_qrel_builder import QueryQrelsBuilder
 
-def test_retriever(retriever_class, provider, queries, qrels, results, data_option, results_dir, agg="max", txt_file_path=None, **kwargs):
+def test_retriever(retriever_class, provider, queries, qrels, results, results_dir, agg="max", txt_file_path=None, **kwargs):
     # Use model_name as key if provided, otherwise use class name
     key = kwargs.get("model_name", retriever_class.__name__)
     
@@ -75,21 +75,17 @@ def test_retriever(retriever_class, provider, queries, qrels, results, data_opti
         "sorted_run_path": run_file_path
     }
 
-def setup_paths_and_results(data_option, is_test):
+def setup_paths_and_results(chunks_path):
     """Setup file paths and load existing results."""
-    if data_option == "annotated_pages":
-        csv_path = "src/dataset/chunks/chunked_pages_test.csv" if is_test else "src/dataset/chunks/chunked_pages.csv"
-    elif data_option == "all_pages":
-        csv_path = "src/dataset/chunks/chunked_sampled_pages.csv"
-    else:
-        raise ValueError("Invalid data_option. Choose 'annotated_pages' or 'all_pages'.")
+    # Extract a name from the chunks_path for results directory
+    chunks_filename = os.path.splitext(os.path.basename(chunks_path))[0]
     
-    results_dir = f"src/retrievers/results/{data_option}{'_test' if is_test else ''}"
+    results_dir = f"src/retrievers/results/{chunks_filename}"
     os.makedirs(results_dir, exist_ok=True)
-    results_path = f"{results_dir}/colvision_retrievers_results_{data_option}.json"
-    txt_results_path = f"{results_dir}/colvision_retrievers_results_{data_option}.txt"
+    results_path = f"{results_dir}/colvision_retrievers_results_{chunks_filename}.json"
+    txt_results_path = f"{results_dir}/colvision_retrievers_results_{chunks_filename}.txt"
     
-    return csv_path, results_path, txt_results_path
+    return results_path, txt_results_path
 
 def load_or_create_results(results_path, txt_results_path, provider):
     """Load existing results or create new results structure."""
@@ -111,62 +107,62 @@ def load_or_create_results(results_path, txt_results_path, provider):
     
     return results
 
-def run_all_tests(provider, queries, qrels, results, data_option, results_dir, txt_results_path):
+def run_all_tests(provider, queries, qrels, results, results_dir, txt_results_path):
     """Run tests for all retriever models."""
     image_dir = "data/pages"
 
+    batch_size = 2
+    
+    # test_retriever(
+    #     ColPaliRetriever, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="vidore/colpali-v1.3", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+    # )
     test_retriever(
-        ColPaliRetriever, provider, queries, qrels, results["models"], data_option, results_dir,
-        model_name="vidore/colpali-v1.3", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=1, device_map="cuda"
+        ColQwen2Retriever, provider, queries, qrels, results["models"], results_dir,
+        model_name="vidore/colqwen2-v1.0", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
     )
-    test_retriever(
-        ColQwen2Retriever, provider, queries, qrels, results["models"], data_option, results_dir,
-        model_name="vidore/colqwen2-v1.0", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=1, device_map="cuda"
-    )
-    test_retriever(
-        ColQwen2_5Retriever, provider, queries, qrels, results["models"], data_option, results_dir,
-        model_name="vidore/colqwen2.5-v0.2", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=1, device_map="cuda"
-    )
-    test_retriever(
-        ColQwen2_5Retriever, provider, queries, qrels, results["models"], data_option, results_dir,
-        model_name="nomic-ai/colnomic-embed-multimodal-3b", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=1, device_map="cuda"
-    )
-    test_retriever(
-        ColQwen2_5Retriever, provider, queries, qrels, results["models"], data_option, results_dir,
-        model_name="nomic-ai/colnomic-embed-multimodal-7b", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=1, device_map="cuda"
-    )
-    test_retriever(
-        ColSmol, provider, queries, qrels, results["models"], data_option, results_dir,
-        model_name="vidore/colSmol-500M", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=1, device_map="cuda"
-    )
-    test_retriever(
-        ColSmol, provider, queries, qrels, results["models"], data_option, results_dir,
-        model_name="vidore/colSmol-256M", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=1, device_map="cuda"
-    )
+    # test_retriever(
+    #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="vidore/colqwen2.5-v0.2", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+    # )
+    # test_retriever(
+    #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="nomic-ai/colnomic-embed-multimodal-3b", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+    # )
+    # test_retriever(
+    #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="nomic-ai/colnomic-embed-multimodal-7b", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+    # )
+    # test_retriever(
+    #     ColSmol, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="vidore/colSmol-500M", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+    # )
+    # test_retriever(
+    #     ColSmol, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="vidore/colSmol-256M", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+    # )
 
 def main():
     parser = argparse.ArgumentParser(description="Test colvision retrievers")
-    parser.add_argument("--data_option", choices=["annotated_pages", "all_pages"], 
-                       default="annotated_pages", help="Data option to use")
-    parser.add_argument("--is_test", action="store_true", default=True,
-                       help="Use test data (smaller dataset)")
+    parser.add_argument("--chunks_path", type=str,
+                       help="Path to the CSV file containing chunks data")
     
     args = parser.parse_args()
-    args.is_test = True
     
+    args.chunks_path = "src/dataset/chunks/chunked_pages_random_qa_sample.csv"
     # Setup paths and load results
-    csv_path, results_path, txt_results_path = setup_paths_and_results(args.data_option, args.is_test)
+    results_path, txt_results_path = setup_paths_and_results(args.chunks_path)
     results_dir = os.path.dirname(results_path)
     
     # Initialize provider and load/create results
-    provider = DocumentProvider(csv_path, use_nltk_preprocessor=True)
+    provider = DocumentProvider(args.chunks_path, use_nltk_preprocessor=True)
     results = load_or_create_results(results_path, txt_results_path, provider)
     
     print(provider.stats)
-    queries, qrels = QueryQrelsBuilder(csv_path).build()
+    queries, qrels = QueryQrelsBuilder(args.chunks_path).build()
 
     # Run all tests
-    run_all_tests(provider, queries, qrels, results, args.data_option, results_dir, txt_results_path)
+    run_all_tests(provider, queries, qrels, results, results_dir, txt_results_path)
 
     # Save results to JSON file
     with open(results_path, "w") as f:

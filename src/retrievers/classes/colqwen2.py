@@ -32,7 +32,7 @@ class ColQwen2Retriever(BaseRetriever):
     def __init__(
         self,
         provider: DocumentProvider,
-        image_dir: Union[str, Path],
+        image_dirs: Union[str, Path, List[Union[str, Path]]] = "data/pages",
         model_name: str = "vidore/colqwen2-v1.0",
         device_map: str = "cuda" if torch.cuda.is_available() else "cpu",
         batch_size: int = 16,
@@ -41,7 +41,13 @@ class ColQwen2Retriever(BaseRetriever):
         # Gather unique page filenames in order
         filenames = list(OrderedDict.fromkeys(provider.chunk_to_page.values()))
         self.page_ids = [Path(fn).stem for fn in filenames]
-        image_dir = Path(image_dir)
+        
+        # Convert image_dirs to list if single path (backward compatible)
+        if isinstance(image_dirs, (str, Path)):
+            image_dirs = [image_dirs]
+        else:
+            image_dirs = list(image_dirs)
+        image_dirs = [Path(d) for d in image_dirs]
         
         # Load ColQwen2 model & processor
         self.model = ColQwen2.from_pretrained(
@@ -54,9 +60,38 @@ class ColQwen2Retriever(BaseRetriever):
         self.device = next(self.model.parameters()).device
         print(f"Using device: {self.device}")
 
-        # Load and embed each page image
-        images = [Image.open(image_dir / fn).convert("RGB") for fn in filenames]
+        # Load and embed each page image (search in multiple directories)
+        images = self._load_images(filenames, image_dirs)
         self.page_embeddings = self._embed_images(images, batch_size)
+
+    def _load_images(
+        self,
+        filenames: List[str],
+        image_dirs: List[Path],
+    ) -> List[Image.Image]:
+        """Load images from multiple directories, searching in order."""
+        images = []
+        for fn in filenames:
+            img = None
+            for img_dir in image_dirs:
+                img_path = img_dir / fn
+                if img_path.exists():
+                    try:
+                        img = Image.open(img_path).convert("RGB")
+                        break
+                    except Exception as e:
+                        print(f"⚠️  Failed to load {img_path}: {e}")
+                        continue
+            
+            if img is None:
+                raise FileNotFoundError(
+                    f"Image not found in any directory: {fn}\n"
+                    f"Searched in: {[str(d) for d in image_dirs]}"
+                )
+            images.append(img)
+        
+        print(f"✅ Loaded {len(images)} images from {len(image_dirs)} directory(ies)")
+        return images
 
     def _embed_images(
         self,

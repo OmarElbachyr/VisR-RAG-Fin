@@ -16,7 +16,11 @@ class QueryQrelsBuilder:
     def build(self) -> Tuple[Dict[str, str], Dict[str, Dict[str, int]]]:
         queries: Dict[str, str] = {}
         qrels: Dict[str, Dict[str, int]] = {}
-        for i, (qtext, grp) in enumerate(self.df.groupby("query", sort=False), 1):
+        
+        # Filter out rows with empty queries (noise pages)
+        df_filtered = self.df[self.df["query"].astype(str).str.strip() != ""]
+        
+        for i, (qtext, grp) in enumerate(df_filtered.groupby("query", sort=False), 1):
             qid = f"q{i}"
             queries[qid] = qtext
             page_ids = (
