@@ -4,11 +4,15 @@ import time
 import argparse
 import os
 import ollama
-import openai
+from openai import OpenAI
+import tiktoken
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 SYSTEM_PROMPT = """
-You are an expert VQA grader.
+You are an expert QA grader.
 Given a question, reference answer, and proposed answer, decide if the proposed
 answer is fully correct.
 Respond ONLY with the single word "yes" (fully correct) or "no" (anything
@@ -22,6 +26,19 @@ class LLMJudge:
         self.use_openai = use_openai
         self.openai_model = openai_model
         
+        # Initialize OpenAI client if using OpenAI
+        if self.use_openai:
+            self.client = OpenAI()
+        
+        # Initialize tiktoken encoder for token counting - use same tokenizer for all models
+        self.encoder = tiktoken.get_encoding("cl100k_base")
+    
+    def count_tokens(self, text):
+        """Count tokens in text using tiktoken"""
+        if not text:
+            return 0
+        return len(self.encoder.encode(text))
+        
     def evaluate_answer(self, question, reference_answer, predicted_answer):
         start_time = time.time()
         prompt = f"""Question: {question}
@@ -32,14 +49,12 @@ Proposed Answer: {predicted_answer}"""
 
         try:
             if self.use_openai:
-                response = openai.chat.completions.create(
+                response = self.client.chat.completions.create(
                     model=self.openai_model,
                     messages=[
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": prompt}
-                    ],
-                    temperature=0.0,
-                    max_tokens=10
+                    ]
                 )
                 judgment = response.choices[0].message.content.strip().lower()
             else:
@@ -48,8 +63,7 @@ Proposed Answer: {predicted_answer}"""
                     messages=[
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": prompt}
-                    ],
-                    options={"temperature": 0.0}
+                    ]
                 )
                 judgment = response['message']['content'].strip().lower()
 
@@ -58,9 +72,15 @@ Proposed Answer: {predicted_answer}"""
                 'success': True,
                 'is_correct': is_correct,
                 'judgment': judgment,
-                'time': time.time() - start_time
+                'time': time.time() - start_time,
+                'eval_model': self.openai_model if self.use_openai else self.judge_model,
+                'predicted_answer_tokens': self.count_tokens(predicted_answer),
+                'ground_truth_tokens': self.count_tokens(reference_answer),
+                'predicted_answer_length': len(predicted_answer) if predicted_answer else 0,
+                'ground_truth_length': len(reference_answer) if reference_answer else 0
             }
         except Exception as e:
+            print(f"API Error: {e}")
             return {
                 'success': False,
                 'is_correct': None,
@@ -117,6 +137,11 @@ class ResultsEvaluator:
                         'is_correct': judgment['is_correct'],
                         'judgment': judgment['judgment'],
                         'judgment_time': judgment['time'],
+                        'eval_model': judgment.get('eval_model'),
+                        'predicted_answer_tokens': judgment.get('predicted_answer_tokens'),
+                        'ground_truth_tokens': judgment.get('ground_truth_tokens'),
+                        'predicted_answer_length': judgment.get('predicted_answer_length'),
+                        'ground_truth_length': judgment.get('ground_truth_length'),
                         'judgment_error': judgment.get('error')
                     })
                 else:
@@ -174,8 +199,7 @@ def main():
     parser.add_argument('--retrievers', nargs='+', help='Retrievers to test')
     parser.add_argument('--top_k', nargs='+', type=int, help='List of top-k values to evaluate (e.g. --top_k 1 3 5)')
     parser.add_argument('--output_dir', default='src/generators/eval')
-    parser.add_argument('--is_test', action='store_true', help='Use test results and output to test directory')
-    parser.add_argument('--baseline_results_dir', default='src/generators/results/baselines', help='Directory containing baseline results')
+    parser.add_argument('--baseline_results_dir', default='src/generators/results/category_a/baselines', help='Directory containing baseline results')
     parser.add_argument('--pipeline_results_dir', default='src/generators/results/retrieval_pipeline', help='Directory containing end-to-end retrieval + generation pipeline results')
     parser.add_argument('--limit', type=int, help='Limit entries')
     parser.add_argument('--judge_model', default='qwen2.5:14b', help='Judge model for evaluation')
@@ -183,25 +207,26 @@ def main():
     parser.add_argument('--openai_judge_model', default='gpt-4', help='OpenAI judge model')
     args = parser.parse_args()
 
-    args.is_test = True  # Set to True for testing purposes
+    # set to True to evaluate baselines only
+    args.evaluate_baselines = True 
+
+    # Hard code OpenAI as judge
+    args.use_openai_judge = True
+    args.openai_judge_model = 'gpt-5-mini-2025-08-07'
+
     if not args.models:
-        # args.models = ['gemma3:4b-it-q4_K_M', 'qwen2.5vl:3b',
-        #                'qwen2.5vl:7b', 'gemma3:12b-it-q4_K_M',
-        #                'OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf']
-        args.models = ['Qwen/Qwen2.5-VL-7B-Instruct']
+        args.models = ['gemma3:4b-it-fp16', 'gemma3:12b-it-fp16', 'gemma3:27b-it-fp16', 
+                       'qwen2.5vl:3b-fp16', 'qwen2.5vl:7b-fp16',
+                       'OpenGVLab/InternVL3_5-2B-HF', 'OpenGVLab/InternVL3_5-4B-HF', 'OpenGVLab/InternVL3_5-8B-HF', 'OpenGVLab/InternVL3_5-14B-HF',
+                       'Qwen/Qwen3-VL-4B-Instruct', 'Qwen/Qwen3-VL-8B-Instruct']
+        
     if not args.retrievers:
         args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b', 'nomic-ai/colnomic-embed-multimodal-7b']
     if not args.limit:
         args.limit = None
     if not args.top_k:
         args.top_k = [1, 3]
-
-    # Adjust paths based on is_test flag
-    if args.is_test:
-        args.output_dir = os.path.join(args.output_dir, 'test')
-        args.baseline_results_dir = 'src/generators/results/test/baselines'
-        args.pipeline_results_dir = 'src/generators/results/test/retrieval_pipeline'
-
+  
     try:
         ollama.list()
         print("✓ Ollama connected")
@@ -211,7 +236,8 @@ def main():
 
     if args.use_openai_judge:
         try:
-            openai.models.list()
+            test_client = OpenAI()
+            test_client.models.list()
             print("✓ OpenAI connected")
         except Exception as e:
             print(f"✗ OpenAI error: {e}")

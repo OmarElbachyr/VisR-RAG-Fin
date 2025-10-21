@@ -15,10 +15,10 @@ from unstructured.partition.image import partition_image
 # CONFIG
 # ---------------------------------------------------------------------------
 NOISE_IMG_DIR = Path("data/noise_pages")
-QA_CHUNKS_CSV = Path("src/dataset/chunks/chunked_pages_category_A.csv")
-CSV_PATH = Path("src/dataset/chunks/chunked_noise_pages_test.csv")
+QA_CHUNKS_CSV = Path("src/dataset/chunks/final_chunks/chunked_pages_category_A.csv")
+CSV_PATH = Path("src/dataset/chunks/final_chunks/chunked_noise_pages_300_pages.csv")
 STRATEGY = "hi_res"
-NUM_NOISE_PAGES_TO_SAMPLE = 50  # Global variable: number of noise pages to sample
+NUM_NOISE_PAGES_TO_SAMPLE = 300  # Global variable: number of noise pages to sample
 random.seed(32)
 
 CHUNK_IMG_DIR = Path("chunks_images")
@@ -107,7 +107,8 @@ def _extract_page_chunks(img_path: Path) -> List[Tuple[str, str, str]]:
 
     # figure chunks
     for el in figure_elements:
-        desc = getattr(el, "text", "").strip()
+        text_attr = getattr(el, "text", "")
+        desc = text_attr.strip() if isinstance(text_attr, str) else str(text_attr).strip() if text_attr else ""
         coords = getattr(el.metadata if hasattr(el, "metadata") else {}, "coordinates", None)
         if not coords:
             continue
