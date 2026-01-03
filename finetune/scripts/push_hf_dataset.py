@@ -1,4 +1,4 @@
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -6,12 +6,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Get dataset directory
-dataset_path = "finetune/datasets/visual_queries_dataset"
-repo_id = "omarelba/visual-queries-dataset"
+dataset_path = "finetune/datasets/visual_queries_dataset_0.7"
+repo_id = "omarelba/visual-queries-dataset_0.7"
 
 # Load the dataset using imagefolder
 print(f"Loading dataset from {dataset_path}...")
-ds = load_dataset("imagefolder", data_dir=str(dataset_path))
+
+# For datasets in imagefolder format
+# ds = load_dataset("imagefolder", data_dir=str(dataset_path))
+
+# For resized datasets saved to disk
+ds = load_from_disk(dataset_path)
 
 print(f"✅ Dataset loaded!")
 print(f"Train samples: {len(ds['train'])}")
