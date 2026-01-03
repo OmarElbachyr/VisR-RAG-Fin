@@ -25,7 +25,7 @@ __pycache__/
 *$py.class
 
 *.log
-
+.github
 .env
 notebooks
 chunks_images
@@ -49,3 +49,13 @@ src/generators/eval
 src/evaluation/utils
 test_export_beir
 test_export_csv
+
+# Finetune ignored folders
+finetune/filtered/scraped_pdfs
+finetune/documents
+finetune/original_documents
+finetune/training_documents
+finetune/datasets
+
+wandb
+finetune/checkpoints
