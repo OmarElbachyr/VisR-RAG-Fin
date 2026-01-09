@@ -1,5 +1,6 @@
 
 from functools import partial
+import io
 from datasets import load_dataset, DatasetDict
 from PIL import Image
 

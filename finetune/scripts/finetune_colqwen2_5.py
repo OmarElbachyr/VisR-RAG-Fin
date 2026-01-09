@@ -39,7 +39,7 @@ class Config:
     """Configuration for the training run."""
     model_name = "vidore/colqwen2.5-v0.2"
     dataset_name = "omarelba/visual-queries-dataset"
-    output_dir = "finetune/checkpoints/test" # where to write model + script copy
+    output_dir = "finetune/checkpoints/colqwen2.5-v0.2-visual-queries_5e-5" # where to write model + script copy
 
     # Training parameters
     num_train_epochs = 1
@@ -50,16 +50,16 @@ class Config:
     gradient_checkpointing_kwargs = {"use_reentrant": False}
     eval_strategy = "steps"
     dataloader_num_workers = 8
-    save_steps = 500
+    save_steps = 100
     logging_steps = 10
-    eval_steps = 100
+    eval_steps = 50
     warmup_steps = 100
-    save_total_limit = 1
-    learning_rate = 2e-4
+    save_total_limit = 10
+    learning_rate = 5e-5
     
     # misc: for logging and wandb
     wandb_project = "fin-ir"
-    wandb_experiment_name = "colqwen2.5-v0.2-filtered-dataset"
+    wandb_experiment_name = "colqwen2.5-v0.2-visual-queries-TruX"
     num_gpus = torch.cuda.device_count()
     effective_batch = per_device_train_batch_size * gradient_accumulation_steps * num_gpus
     precision = "bfloat16"
