@@ -35,11 +35,15 @@ class ColQwen2_5Retriever(BaseRetriever):
         model_name: str = "vidore/colqwen2.5-v0.2",
         device_map: str = "cuda" if torch.cuda.is_available() else "cpu",
         batch_size: int = 16,
+        resize_ratio: float = 1.0,
     ) -> None:
         super().__init__()
         # Gather unique page filenames in order
         filenames = list(OrderedDict.fromkeys(provider.chunk_to_page.values()))
         self.page_ids = [Path(fn).stem for fn in filenames]
+        
+        # Store resize parameter
+        self.resize_ratio = resize_ratio
         
         # Convert image_dirs to list if single path (backward compatible)
         if isinstance(image_dirs, (str, Path)):
@@ -63,6 +67,16 @@ class ColQwen2_5Retriever(BaseRetriever):
         images = self._load_images(filenames, image_dirs)
         self.page_embeddings = self._embed_images(images, batch_size)
 
+    def _resize_image(self, img: Image.Image) -> Image.Image:
+        """Resize image by ratio (1.0 = original, 0.5 = 50%, etc.)"""
+        if self.resize_ratio != 1.0:
+            w, h = img.size
+            new_w = int(w * self.resize_ratio)
+            new_h = int(h * self.resize_ratio)
+            img = img.resize((new_w, new_h), resample=Image.BILINEAR)
+        
+        return img
+
     def _load_images(
         self,
         filenames: List[str],
@@ -77,6 +91,7 @@ class ColQwen2_5Retriever(BaseRetriever):
                 if img_path.exists():
                     try:
                         img = Image.open(img_path).convert("RGB")
+                        img = self._resize_image(img)
                         break
                     except Exception as e:
                         print(f"⚠️  Failed to load {img_path}: {e}")

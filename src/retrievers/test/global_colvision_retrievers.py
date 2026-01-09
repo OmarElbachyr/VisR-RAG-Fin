@@ -109,37 +109,37 @@ def load_or_create_results(results_path, txt_results_path, provider):
 
 def run_all_tests(provider, queries, qrels, results, results_dir, txt_results_path):
     """Run tests for all retriever models."""
-    image_dir = "data/pages"
+    image_dirs = ["data/pages", "data/noise_pages"]  # Support QA + noise pages
 
-    batch_size = 2
+    batch_size = 1
     
     # test_retriever(
     #     ColPaliRetriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="vidore/colpali-v1.3", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+    #     model_name="vidore/colpali-v1.3", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+    # )
+    # test_retriever(
+    #     ColQwen2Retriever, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="vidore/colqwen2-v1.0", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+    # )
+    # test_retriever(
+    #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="vidore/colqwen2.5-v0.2", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=0.5
+    # )
+    # test_retriever(
+    #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="nomic-ai/colnomic-embed-multimodal-3b", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda",
+    # )
+    # test_retriever(
+    #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="nomic-ai/colnomic-embed-multimodal-7b", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
     # )
     test_retriever(
-        ColQwen2Retriever, provider, queries, qrels, results["models"], results_dir,
-        model_name="vidore/colqwen2-v1.0", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+        ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
+        model_name="finetune/checkpoints/colqwen2.5-v0.2-visual-queries-dataset_0.5_accum2_batch32_lr5e-5", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=0.5
     )
     # test_retriever(
-    #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="vidore/colqwen2.5-v0.2", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
-    # )
-    # test_retriever(
-    #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="nomic-ai/colnomic-embed-multimodal-3b", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
-    # )
-    # test_retriever(
-    #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="nomic-ai/colnomic-embed-multimodal-7b", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
-    # )
-    # test_retriever(
     #     ColSmol, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="vidore/colSmol-500M", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
-    # )
-    # test_retriever(
-    #     ColSmol, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="vidore/colSmol-256M", image_dir=image_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
+    #     model_name="vidore/colSmol-256M", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda"
     # )
 
 def main():
@@ -149,7 +149,9 @@ def main():
     
     args = parser.parse_args()
     
-    args.chunks_path = "src/dataset/chunks/chunked_pages_random_qa_sample.csv"
+    # args.chunks_path = "src/dataset/chunks/final_chunks/chunked_all_pages_windowed.csv"
+    args.chunks_path = "src/dataset/chunks/final_chunks/chunked_pages_category_A.csv"
+    # args.chunks_path = "src/dataset/chunks/second_pass/chunked_pages_second_pass.csv"
     # Setup paths and load results
     results_path, txt_results_path = setup_paths_and_results(args.chunks_path)
     results_dir = os.path.dirname(results_path)
