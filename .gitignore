@@ -44,6 +44,7 @@ src/retrievers/results/annotated_pages
 src/retrievers/results/all_pages
 src/generators/results
 src/generators/eval
+src/retrievers/results
 
 # Export dataset folders
 src/evaluation/utils
