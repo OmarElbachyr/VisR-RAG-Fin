@@ -8,13 +8,13 @@ from datasets import load_dataset
 from peft import LoraConfig
 from transformers import TrainingArguments
 import wandb
+from dotenv import load_dotenv
 
 from colpali_engine.data.dataset import ColPaliEngineDataset
 from colpali_engine.loss.late_interaction_losses import ColbertLoss, ColbertPairwiseCELoss
 from colpali_engine.models import ColQwen2_5, ColQwen2_5_Processor
 from colpali_engine.trainer.colmodel_torch_training import ColModelTorchTraining
 from colpali_engine.trainer.colmodel_training import ColModelTraining, ColModelTrainingConfig
-from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
@@ -37,15 +37,14 @@ def parse_args():
 
 class Config:
     """Configuration for the training run."""
-    model_name = "vidore/colqwen2.5-v0.2"
-    dataset_name = "omarelba/visual-queries-dataset"
-    output_dir = "finetune/checkpoints/colqwen2.5-v0.2-visual-queries_5e-5" # where to write model + script copy
+    model_name = "nomic-ai/colnomic-embed-multimodal-3b"
+    dataset_name = "omarelba/visual-queries-dataset_0.5"
 
     # Training parameters
-    num_train_epochs = 1
-    gradient_accumulation_steps = 4
-    per_device_train_batch_size = 4
-    per_device_eval_batch_size = 4
+    num_train_epochs = 5
+    gradient_accumulation_steps = 1
+    per_device_train_batch_size = 8
+    per_device_eval_batch_size = 8
     gradient_checkpointing = True
     gradient_checkpointing_kwargs = {"use_reentrant": False}
     eval_strategy = "steps"
@@ -54,14 +53,16 @@ class Config:
     logging_steps = 10
     eval_steps = 50
     warmup_steps = 100
-    save_total_limit = 10
+    save_total_limit = 20
     learning_rate = 5e-5
     
-    # misc: for logging and wandb
-    wandb_project = "fin-ir"
-    wandb_experiment_name = "colqwen2.5-v0.2-visual-queries-TruX"
+    # misc: for logging and wandb   
     num_gpus = torch.cuda.device_count()
     effective_batch = per_device_train_batch_size * gradient_accumulation_steps * num_gpus
+    output_dir = f"finetune/checkpoints/{model_name.split('/')[-1]}-{dataset_name.split('/')[-1]}_accum{gradient_accumulation_steps}_batch{effective_batch}_lr{learning_rate:.0e}_epoch_{num_train_epochs}" # where to write model + script copy
+    wandb_project = "fin-ir"
+    wandb_experiment_name = output_dir.split("/")[-1]
+
     precision = "bfloat16"
     
     # LoRa parameters if using PEFT
@@ -167,7 +168,7 @@ if __name__ == "__main__":
         Config.precision,
     ]
     run = wandb.init(
-        entity="mLux-rag",
+        # entity="mLux-rag",
         project=wandb_project,
         name=wandb_experiment_name,
         job_type="finetuning",
