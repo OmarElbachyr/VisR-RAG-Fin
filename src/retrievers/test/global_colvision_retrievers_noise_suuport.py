@@ -65,25 +65,15 @@ def test_retriever(retriever_class, provider, queries, qrels, results, results_d
             txtf.write(verbose_output.getvalue())
             txtf.write(f"Indexing time: {indexing_time:.4f}s\n")
             txtf.write(f"Retrieval time: {retrieval_time:.4f}s\n")
-            # Write index stats if available
-            if hasattr(retriever, 'index_stats'):
-                txtf.write(f"Index stats: {retriever.index_stats}\n")
             txtf.write(f"Sorted run saved to: {run_file_path}\n")
             txtf.write("-" * 80 + "\n")
 
-    # Build results dict
-    result_data = {
+    results[key] = {
         "metrics": metrics,
         "indexing_time": indexing_time,
         "retrieval_time": retrieval_time,
         "sorted_run_path": run_file_path
     }
-    
-    # Add index stats if available
-    if hasattr(retriever, 'index_stats'):
-        result_data["index_stats"] = retriever.index_stats
-    
-    results[key] = result_data
 
 def setup_paths_and_results(chunks_path, resize_ratio=0.5):
     """Setup file paths and load existing results."""
@@ -119,39 +109,38 @@ def load_or_create_results(results_path, txt_results_path, provider):
 
 def run_all_tests(provider, queries, qrels, results, results_dir, txt_results_path, resize_ratio=0.5):
     """Run tests for all retriever models."""
-    image_dir = "data/pages"
-    hard_negatives_dir = "data/hard_negative_pages_text"  # Set to None to disable
+    image_dirs = ["data/pages", "data/noise_pages"]  # Support QA + noise pages
 
     batch_size = 1
     print(f"\n>>> Using resize_ratio: {resize_ratio}")
     
     # test_retriever(
     #     ColPaliRetriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="vidore/colpali-v1.3", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
+    #     model_name="vidore/colpali-v1.3", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
     # )
     # test_retriever(
     #     ColQwen2Retriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="vidore/colqwen2-v1.0", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
+    #     model_name="vidore/colqwen2-v1.0", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
     # )
     test_retriever(
         ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
-        model_name="vidore/colqwen2.5-v0.2", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
-    )
-    test_retriever(
-        ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
-        model_name="nomic-ai/colnomic-embed-multimodal-3b", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio,
+        model_name="vidore/colqwen2.5-v0.2", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
     )
     # test_retriever(
     #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="nomic-ai/colnomic-embed-multimodal-7b", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
+    #     model_name="nomic-ai/colnomic-embed-multimodal-3b", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio,
     # )
     # test_retriever(
     #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="finetune/checkpoints/colqwen2.5-v0.2-visual-queries-dataset_0.5_accum2_batch32_lr5e-5", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
+    #     model_name="nomic-ai/colnomic-embed-multimodal-7b", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
+    # )
+    # test_retriever(
+    #     ColQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
+    #     model_name="finetune/checkpoints/colqwen2.5-v0.2-visual-queries-dataset_0.5_accum2_batch32_lr5e-5", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
     # )
     # test_retriever(
     #     ColSmol, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="vidore/colSmol-256M", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
+    #     model_name="vidore/colSmol-256M", image_dirs=image_dirs, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
     # )
 
 def main():
