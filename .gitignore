@@ -35,6 +35,7 @@ learn
 data/*
 !/data/pages 
 !/data/annotations
+!/data/hard_negatives_mining
 retrieved_pages
 src/generators/baselines/results
 auto_annotate
