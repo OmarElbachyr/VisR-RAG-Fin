@@ -28,7 +28,7 @@ N_SAVE = 5   # Number of pages to actually save to disk
 N_JSON = 5   # Number of pages to record in JSON
 
 # Paths
-BENCHMARK_CSV = "src/dataset/chunks/final_chunks/chunked_pages_category_A.csv"
+BENCHMARK_CSV = "src/dataset/chunks/second_pass/chunked_pages_second_pass.csv"
 PDF_DIR = "data/indexed_pdfs"
 OUTPUT_IMAGES_DIR = "data/hard_negative_pages_text"
 OUTPUT_JSON = "data/hard_negatives_mining/query_hard_negatives_text.json"
@@ -125,21 +125,43 @@ def main():
     os.makedirs(OUTPUT_IMAGES_DIR, exist_ok=True)
     os.makedirs(os.path.dirname(OUTPUT_JSON), exist_ok=True)
     
-    # Ask user if they want to clear previous results
-    response = input("\nClear previous hard_negative_pages and JSON? (y/n): ").strip().lower()
-    if response == 'y':
-        import shutil
-        if os.path.exists(OUTPUT_IMAGES_DIR):
-            shutil.rmtree(OUTPUT_IMAGES_DIR)
-            os.makedirs(OUTPUT_IMAGES_DIR)
-            print(f"  ✓ Cleared {OUTPUT_IMAGES_DIR}/")
-        if os.path.exists(OUTPUT_JSON):
-            os.remove(OUTPUT_JSON)
-            print(f"  ✓ Cleared {OUTPUT_JSON}")
+    # Ask user how to proceed
+    processed_qids = set()
+    if os.path.exists(OUTPUT_JSON):
+        print("\nPrevious results found.")
+        response = input("Choose option:\n  (1) Clear and restart\n  (2) Continue and append new queries\n  (3) Exit\nEnter choice (1/2/3): ").strip()
+        
+        if response == '3':
+            print("Exiting...")
+            return
+        elif response == '1':
+            import shutil
+            if os.path.exists(OUTPUT_IMAGES_DIR):
+                shutil.rmtree(OUTPUT_IMAGES_DIR)
+                os.makedirs(OUTPUT_IMAGES_DIR)
+                print(f"  ✓ Cleared {OUTPUT_IMAGES_DIR}/")
+            if os.path.exists(OUTPUT_JSON):
+                os.remove(OUTPUT_JSON)
+                print(f"  ✓ Cleared {OUTPUT_JSON}")
+        elif response == '2':
+            # Load existing processed queries
+            with open(OUTPUT_JSON, "r") as f:
+                existing_data = json.load(f)
+            processed_qids = set(existing_data["queries"].keys())
+            print(f"  → Found {len(processed_qids)} already processed queries")
+        else:
+            print("Invalid choice. Exiting...")
+            return
     
     # Load benchmark
     print("\n[1/4] Loading benchmark...")
     benchmark = load_benchmark(BENCHMARK_CSV)
+    
+    # Filter to only new queries if continuing
+    if processed_qids:
+        benchmark = benchmark[~benchmark["question_id"].isin(processed_qids)]
+        print(f"  → {len(benchmark)} new queries to process")
+    
     queries_by_pdf = group_queries_by_pdf(benchmark)
     print(f"  → {len(queries_by_pdf)} PDFs to process")
     
@@ -264,20 +286,30 @@ def main():
     finally:
         # Always save JSON, even if interrupted or errors occurred
         print(f"\n[4/4] Saving results...")
-        output_data = {
-            "metadata": {
-                "model": MODEL_NAME,
-                "n_save": N_SAVE,
-                "n_json": N_JSON,
-                "date": datetime.now().isoformat(),
-                "total_queries": len(all_hard_negatives),
-                "total_hard_negative_pages": len(saved_pages),
-                "min_text_length": MIN_TEXT_LENGTH,
-                "skipped_queries": skipped_queries,
-                "failed_pdfs": len(failed_pdfs),
-            },
-            "queries": all_hard_negatives
-        }
+        
+        # Load existing data if continuing
+        if processed_qids:
+            with open(OUTPUT_JSON, "r") as f:
+                output_data = json.load(f)
+            # Append new queries
+            output_data["queries"].update(all_hard_negatives)
+            output_data["metadata"]["total_queries"] = len(output_data["queries"])
+            output_data["metadata"]["date"] = datetime.now().isoformat()
+        else:
+            output_data = {
+                "metadata": {
+                    "model": MODEL_NAME,
+                    "n_save": N_SAVE,
+                    "n_json": N_JSON,
+                    "date": datetime.now().isoformat(),
+                    "total_queries": len(all_hard_negatives),
+                    "total_hard_negative_pages": len(saved_pages),
+                    "min_text_length": MIN_TEXT_LENGTH,
+                    "skipped_queries": skipped_queries,
+                    "failed_pdfs": len(failed_pdfs),
+                },
+                "queries": all_hard_negatives
+            }
         
         with open(OUTPUT_JSON, "w") as f:
             json.dump(output_data, f, indent=2)
