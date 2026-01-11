@@ -6,8 +6,8 @@ from PIL import Image
 
 
 image_resize_ratio = 0.5
-dataset_name = 'finetune/datasets/visual_queries_dataset'
-output_dataset_name = f'finetune/datasets/visual_queries_dataset_{image_resize_ratio}'
+dataset_name = "finetune/datasets/visual_queries_dataset_v2"
+output_dataset_name = f"finetune/datasets/{dataset_name.split('/')[-1]}_{image_resize_ratio}"
 
 # Load both train and test splits
 dataset = load_dataset(dataset_name)

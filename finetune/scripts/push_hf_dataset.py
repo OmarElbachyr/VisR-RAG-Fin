@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Get dataset directory
-dataset_path = "finetune/datasets/visual_queries_dataset_0.7"
-repo_id = "omarelba/visual-queries-dataset_0.7"
+dataset_path = "finetune/datasets/visual_queries_dataset_v2_0.5"
+repo_id = "omarelba/visual-queries-dataset_0.5_v2"
 
 # Load the dataset using imagefolder
 print(f"Loading dataset from {dataset_path}...")
