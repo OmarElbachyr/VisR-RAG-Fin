@@ -122,7 +122,7 @@ def load_or_create_results(results_path, txt_results_path, provider):
 
 def run_all_tests(provider, queries, qrels, results, results_dir, txt_results_path):
     """Run tests for all retriever models."""
-    hard_negatives_chunks_path = "data/hard_negative_chunks.csv"  # Set to None to disable
+    hard_negatives_chunks_path = "src/dataset/chunks/noise_pages_chunks/hard_negative_chunks.csv"  # Set to None to disable
     batch_size = 32
     
     test_retriever(BM25Retriever, provider, queries, qrels, results["models"], results_dir, agg="max", 

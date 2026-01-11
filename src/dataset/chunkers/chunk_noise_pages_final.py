@@ -14,11 +14,11 @@ from unstructured.partition.image import partition_image
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
-NOISE_IMG_DIR = Path("data/noise_pages")
-QA_CHUNKS_CSV = Path("src/dataset/chunks/final_chunks/chunked_pages_category_A.csv")
-CSV_PATH = Path("src/dataset/chunks/final_chunks/chunked_noise_pages_300_pages.csv")
+NOISE_IMG_DIR = Path("data/hard_negative_pages_text")
+QA_CHUNKS_CSV = Path("src/dataset/chunks/second_pass/chunked_pages_second_pass.csv")
+CSV_PATH = Path("src/dataset/chunks/noise_pages_chunks/hard_negative_chunks.csv")
 STRATEGY = "hi_res"
-NUM_NOISE_PAGES_TO_SAMPLE = 300  # Global variable: number of noise pages to sample
+NUM_NOISE_PAGES_TO_SAMPLE = -1  # -1 means process all pages, positive number samples that many
 random.seed(32)
 
 CHUNK_IMG_DIR = Path("chunks_images")
@@ -64,7 +64,7 @@ def get_qa_pages() -> set[str]:
 def get_noise_pages_to_process(num_samples: int) -> List[Path]:
     """
     Get noise pages from data/noise_pages, excluding those already in QA chunks CSV.
-    Sample num_samples pages randomly.
+    If num_samples is -1, process all pages. Otherwise, sample num_samples pages randomly.
     """
     if not NOISE_IMG_DIR.exists():
         raise ValueError(f"Noise pages directory not found: {NOISE_IMG_DIR}")
@@ -72,6 +72,13 @@ def get_noise_pages_to_process(num_samples: int) -> List[Path]:
     qa_pages = get_qa_pages()
     all_noise_pages = [f for f in NOISE_IMG_DIR.glob("*") if f.is_file() and f.name not in qa_pages]
     
+    # Process all pages if num_samples is -1
+    if num_samples == -1:
+        tqdm.write(f"✅ Processing all {len(all_noise_pages)} noise pages "
+                   f"(excluding {len(qa_pages)} QA pages)")
+        return all_noise_pages
+    
+    # Sample num_samples pages
     if len(all_noise_pages) < num_samples:
         tqdm.write(f"⚠️  Warning: Only {len(all_noise_pages)} noise pages available (excluding QA pages), "
                    f"but {num_samples} requested. Using all available.")
@@ -158,12 +165,12 @@ def main() -> None:
     noise_pages = get_noise_pages_to_process(NUM_NOISE_PAGES_TO_SAMPLE)
     
     if not noise_pages:
-        tqdm.write("❌ No noise pages to process. Exiting.")
+        tqdm.write("❌ No hard negative pages to process. Exiting.")
         return
 
     all_rows: list[dict] = []
     
-    for img_path in tqdm(noise_pages, desc="Processing noise pages"):
+    for img_path in tqdm(noise_pages, desc="Processing hard negative pages"):
         # Extract page chunks
         chunks = _extract_page_chunks(img_path)
         if not chunks:
