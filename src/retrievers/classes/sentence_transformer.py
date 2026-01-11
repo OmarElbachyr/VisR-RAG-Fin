@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
+from pathlib import Path
 import faiss
 import numpy as np
 import torch
@@ -11,6 +12,7 @@ from retrievers.classes.base import BaseRetriever
 
 def get_detailed_instruct(task_description: str, query: str) -> str:
     return f'Instruct: {task_description}\nQuery: {query}'
+    
 class SentenceTransformerRetriever(BaseRetriever):
     """Dense retriever using SentenceTransformer + FAISS (full‑corpus scoring)."""
 
@@ -22,6 +24,7 @@ class SentenceTransformerRetriever(BaseRetriever):
         is_instruct: bool = False,
         task_description: str = "Given a user query, retrieve the most relevant passages from the document corpus",
         batch_size: int = 32,
+        hard_negatives_chunks_path: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.model = SentenceTransformer(model_name, device=device_map)
@@ -29,11 +32,50 @@ class SentenceTransformerRetriever(BaseRetriever):
         self.task_description = task_description
         self.batch_size = batch_size
 
+        # Load positive chunks
         ids, embeds = provider.get("dense", encode_fn=self._encode)
-        self.doc_ids: List[str] = ids
-        self.chunk_to_page = provider.chunk_to_page  # map chunk_id → page_number
+        self.doc_ids: List[str] = list(ids)
+        self.chunk_to_page = dict(provider.chunk_to_page)
+        all_embeddings = list(embeds)
+        num_positive_chunks = len(self.doc_ids)
+        print(f"  → Positive chunks: {num_positive_chunks}")
+        
+        # Load hard negatives if provided
+        num_hard_negatives = 0
+        num_skipped = 0
+        if hard_negatives_chunks_path is not None:
+            hard_negatives_chunks_path = Path(hard_negatives_chunks_path)
+            if hard_negatives_chunks_path.exists():
+                hn_provider = DocumentProvider(str(hard_negatives_chunks_path), use_nltk_preprocessor=True)
+                hn_ids, hn_embeds = hn_provider.get("dense", encode_fn=self._encode)
+                existing_ids = set(self.doc_ids)
+                
+                # Add hard negative chunks that aren't already in positive set
+                for chunk_id, embed in zip(hn_ids, hn_embeds):
+                    if chunk_id in existing_ids:
+                        num_skipped += 1
+                        continue
+                    self.doc_ids.append(chunk_id)
+                    all_embeddings.append(embed)
+                    self.chunk_to_page[chunk_id] = hn_provider.chunk_to_page[chunk_id]
+                    num_hard_negatives += 1
+                
+                print(f"  → Hard negative chunks: {num_hard_negatives}")
+                if num_skipped > 0:
+                    print(f"  → Skipped {num_skipped} duplicates")
+        
+        print(f"  → Total chunks indexed: {len(self.doc_ids)}")
+        
+        # Store index statistics
+        self.index_stats = {
+            "positive_chunks": num_positive_chunks,
+            "hard_negatives": num_hard_negatives,
+            "skipped_duplicates": num_skipped,
+            "total_indexed": len(self.doc_ids),
+        }
 
-        self.doc_embeddings = np.asarray(embeds, dtype="float32")
+        # Build FAISS index with all embeddings
+        self.doc_embeddings = np.asarray(all_embeddings, dtype="float32")
         faiss.normalize_L2(self.doc_embeddings)
         dim = self.doc_embeddings.shape[1]
         self.index = faiss.IndexFlatIP(dim)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 from pylate import models, indexes, retrieve
 import numpy as np
 
@@ -20,6 +20,7 @@ class ColBERTRetriever(BaseRetriever):
         index_folder: str | Path = "indexes/pylate-index",
         index_name: str = "index",
         override: bool = True,
+        hard_negatives_chunks_path: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.model = models.ColBERT(model_name_or_path=model_name, device=device_map)
@@ -31,18 +32,59 @@ class ColBERTRetriever(BaseRetriever):
             index_name=index_name,
             override=override,
         )
+        
+        # Load positive chunks
         ids, texts = provider.get("text")
-        self.doc_ids: List[str] = ids
-        self.chunk_to_page = provider.chunk_to_page
+        self.doc_ids: List[str] = list(ids)
+        self.chunk_to_page = dict(provider.chunk_to_page)
+        all_texts = list(texts)
+        num_positive_chunks = len(self.doc_ids)
+        print(f"  → Positive chunks: {num_positive_chunks}")
+        
+        # Load hard negatives if provided
+        num_hard_negatives = 0
+        num_skipped = 0
+        if hard_negatives_chunks_path is not None:
+            hard_negatives_chunks_path = Path(hard_negatives_chunks_path)
+            if hard_negatives_chunks_path.exists():
+                hn_provider = DocumentProvider(str(hard_negatives_chunks_path), use_nltk_preprocessor=True)
+                hn_ids, hn_texts = hn_provider.get("text")
+                existing_ids = set(self.doc_ids)
+                
+                # Add hard negative chunks that aren't already in positive set
+                for chunk_id, text in zip(hn_ids, hn_texts):
+                    if chunk_id in existing_ids:
+                        num_skipped += 1
+                        continue
+                    self.doc_ids.append(chunk_id)
+                    all_texts.append(text)
+                    self.chunk_to_page[chunk_id] = hn_provider.chunk_to_page[chunk_id]
+                    num_hard_negatives += 1
+                
+                print(f"  → Hard negative chunks: {num_hard_negatives}")
+                if num_skipped > 0:
+                    print(f"  → Skipped {num_skipped} duplicates")
+        
+        print(f"  → Total chunks indexed: {len(self.doc_ids)}")
+        
+        # Store index statistics
+        self.index_stats = {
+            "positive_chunks": num_positive_chunks,
+            "hard_negatives": num_hard_negatives,
+            "skipped_duplicates": num_skipped,
+            "total_indexed": len(self.doc_ids),
+        }
+        
+        # Encode and index all texts
         embeddings = self.model.encode(
-            texts,
+            all_texts,
             device=self.device,
             batch_size=batch_size,
             is_query=False,
             show_progress_bar=True,
         )
         self.index.add_documents(
-            documents_ids=ids,
+            documents_ids=self.doc_ids,
             documents_embeddings=embeddings,
         )
         self.searcher = retrieve.ColBERT(index=self.index)

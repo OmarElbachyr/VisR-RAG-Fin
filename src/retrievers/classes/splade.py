@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict, Literal
+from typing import Dict, Literal, Optional
+from pathlib import Path
 from collections import defaultdict
 
 import numpy as np
@@ -22,12 +23,11 @@ class SpladeRetriever(BaseRetriever):
         device_map: str = "cuda" if torch.cuda.is_available() else "cpu",
         batch_size: int = 16,
         k_tokens_index: int = 256,
+        hard_negatives_chunks_path: Optional[str] = None,
     ) -> None:
         super().__init__()
-        # preserve chunk→page mapping
-        self.chunk_to_page = provider.chunk_to_page
-
-        # load tokenizer + MLM
+        
+        # Load tokenizer + MLM
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         mlm = AutoModelForMaskedLM.from_pretrained(model_name).to(device_map)
 
@@ -38,9 +38,45 @@ class SpladeRetriever(BaseRetriever):
             device=device_map
         )
 
-        # build simple docs list from provider
+        # Load positive chunks
         ids, texts = provider.get(kind="text")
         documents = [{"id": doc_id, "text": txt} for doc_id, txt in zip(ids, texts)]
+        self.chunk_to_page = dict(provider.chunk_to_page)
+        num_positive_chunks = len(documents)
+        print(f"  → Positive chunks: {num_positive_chunks}")
+        
+        # Load hard negatives if provided
+        num_hard_negatives = 0
+        num_skipped = 0
+        if hard_negatives_chunks_path is not None:
+            hard_negatives_chunks_path = Path(hard_negatives_chunks_path)
+            if hard_negatives_chunks_path.exists():
+                hn_provider = DocumentProvider(str(hard_negatives_chunks_path), use_nltk_preprocessor=True)
+                hn_ids, hn_texts = hn_provider.get(kind="text")
+                existing_ids = set(ids)
+                
+                # Add hard negative chunks that aren't already in positive set
+                for chunk_id, text in zip(hn_ids, hn_texts):
+                    if chunk_id in existing_ids:
+                        num_skipped += 1
+                        continue
+                    documents.append({"id": chunk_id, "text": text})
+                    self.chunk_to_page[chunk_id] = hn_provider.chunk_to_page[chunk_id]
+                    num_hard_negatives += 1
+                
+                print(f"  → Hard negative chunks: {num_hard_negatives}")
+                if num_skipped > 0:
+                    print(f"  → Skipped {num_skipped} duplicates")
+        
+        print(f"  → Total chunks indexed: {len(documents)}")
+        
+        # Store index statistics
+        self.index_stats = {
+            "positive_chunks": num_positive_chunks,
+            "hard_negatives": num_hard_negatives,
+            "skipped_duplicates": num_skipped,
+            "total_indexed": len(documents),
+        }
 
         # init retriever and index all chunks
         retr = splade_retrieve.SpladeRetriever(

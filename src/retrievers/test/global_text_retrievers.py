@@ -14,7 +14,7 @@ from retrievers.classes.splade import SpladeRetriever
 from evaluation.classes.document_provider import DocumentProvider
 from evaluation.classes.query_qrel_builder import QueryQrelsBuilder
 
-def test_retriever(retriever_class, provider, queries, qrels, results, data_option, results_dir, agg="max", txt_file_path=None, **kwargs):
+def test_retriever(retriever_class, provider, queries, qrels, results, results_dir, agg="max", txt_file_path=None, **kwargs):
     # Use model_name as key if provided, otherwise use class name
     key = kwargs.get("model_name", retriever_class.__name__)
     
@@ -68,32 +68,37 @@ def test_retriever(retriever_class, provider, queries, qrels, results, data_opti
             txtf.write(verbose_output.getvalue())
             txtf.write(f"Indexing time: {indexing_time:.4f}s\n")
             txtf.write(f"Retrieval time: {retrieval_time:.4f}s\n")
+            # Write index stats if available
+            if hasattr(retriever, 'index_stats'):
+                txtf.write(f"Index stats: {retriever.index_stats}\n")
             txtf.write(f"Sorted run saved to: {run_file_path}\n")
             txtf.write("-" * 80 + "\n")
 
-    # Store metrics
-    results[key] = {
+    # Build results dict
+    result_data = {
         "metrics": metrics,
         "indexing_time": indexing_time,
         "retrieval_time": retrieval_time,
         "sorted_run_path": run_file_path
     }
+    
+    # Add index stats if available
+    if hasattr(retriever, 'index_stats'):
+        result_data["index_stats"] = retriever.index_stats
+    
+    results[key] = result_data
 
-def setup_paths_and_results(data_option, is_test):
+def setup_paths_and_results(chunks_path):
     """Setup file paths and load existing results."""
-    if data_option == "annotated_pages":
-        csv_path = "src/dataset/chunks/chunked_pages_test.csv" if is_test else "src/dataset/chunks/chunked_pages.csv"
-    elif data_option == "all_pages":
-        csv_path = "src/dataset/chunks/chunked_sampled_pages.csv"
-    else:
-        raise ValueError("Invalid data_option. Choose 'annotated_pages' or 'all_pages'.")
+    # Extract a name from the chunks_path for results directory
+    chunks_filename = os.path.splitext(os.path.basename(chunks_path))[0]
     
-    results_dir = f"src/retrievers/results/{data_option}{'_test' if is_test else ''}"
+    results_dir = f"src/retrievers/results/{chunks_filename}"
     os.makedirs(results_dir, exist_ok=True)
-    results_path = f"{results_dir}/text_retrievers_results_{data_option}.json"
-    txt_results_path = f"{results_dir}/text_retrievers_results_{data_option}.txt"
+    results_path = f"{results_dir}/text_retrievers_results_{chunks_filename}.json"
+    txt_results_path = f"{results_dir}/text_retrievers_results_{chunks_filename}.txt"
     
-    return csv_path, results_path, txt_results_path
+    return results_path, txt_results_path
 
 def load_or_create_results(results_path, txt_results_path, provider):
     """Load existing results or create new results structure."""
@@ -115,50 +120,55 @@ def load_or_create_results(results_path, txt_results_path, provider):
     
     return results
 
-def run_all_tests(provider, queries, qrels, results, data_option, results_dir, txt_results_path):
+def run_all_tests(provider, queries, qrels, results, results_dir, txt_results_path):
     """Run tests for all retriever models."""
-    test_retriever(BM25Retriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max", 
-                   txt_file_path=txt_results_path)
+    hard_negatives_chunks_path = "data/hard_negative_chunks.csv"  # Set to None to disable
+    batch_size = 32
     
-    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max",
-                   model_name="BAAI/bge-m3", device_map='cuda', txt_file_path=txt_results_path, batch_size=32)
+    test_retriever(BM25Retriever, provider, queries, qrels, results["models"], results_dir, agg="max", 
+                   hard_negatives_chunks_path=hard_negatives_chunks_path, txt_file_path=txt_results_path)
     
-    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max", 
-                   model_name="intfloat/multilingual-e5-large", is_instruct=False, device_map='cuda', txt_file_path=txt_results_path, batch_size=32)
+    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], results_dir, agg="max",
+                   model_name="BAAI/bge-m3", hard_negatives_chunks_path=hard_negatives_chunks_path, device_map='cuda', txt_file_path=txt_results_path, batch_size=batch_size)
     
-    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max", 
-                   model_name="intfloat/multilingual-e5-large-instruct", is_instruct=True, device_map='cuda', txt_file_path=txt_results_path, batch_size=32)
+    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], results_dir, agg="max", 
+                   model_name="intfloat/multilingual-e5-large", is_instruct=False, hard_negatives_chunks_path=hard_negatives_chunks_path, device_map='cuda', txt_file_path=txt_results_path, batch_size=batch_size)
     
-    test_retriever(ColBERTRetriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max", 
-                   model_name="colbert-ir/colbertv2.0", index_folder="indexes/pylate-index", index_name="index", override=True, device_map='cuda', batch_size=32, txt_file_path=txt_results_path)
+    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], results_dir, agg="max", 
+                   model_name="intfloat/multilingual-e5-large-instruct", is_instruct=True, hard_negatives_chunks_path=hard_negatives_chunks_path, device_map='cuda', txt_file_path=txt_results_path, batch_size=batch_size)
     
-    test_retriever(SpladeRetriever, provider, queries, qrels, results["models"], data_option, results_dir, agg="max", 
-                   model_name="naver/splade-v3",
-                   batch_size=32, device_map="cuda", txt_file_path=txt_results_path)
+    test_retriever(ColBERTRetriever, provider, queries, qrels, results["models"], results_dir, agg="max", 
+                   model_name="colbert-ir/colbertv2.0", index_folder="indexes/pylate-index", index_name="index", override=True, hard_negatives_chunks_path=hard_negatives_chunks_path, device_map='cuda', batch_size=batch_size, txt_file_path=txt_results_path)
+    
+    test_retriever(SpladeRetriever, provider, queries, qrels, results["models"], results_dir, agg="max", 
+                   model_name="naver/splade-v3", hard_negatives_chunks_path=hard_negatives_chunks_path,
+                   batch_size=batch_size, device_map="cuda", txt_file_path=txt_results_path)
 
 def main():
     parser = argparse.ArgumentParser(description="Test text retrievers")
-    parser.add_argument("--data_option", choices=["annotated_pages", "all_pages"], 
-                       default="annotated_pages", help="Data option to use")
-    parser.add_argument("--is_test", action="store_true", default=True,
-                       help="Use test data (smaller dataset)")
+    parser.add_argument("--chunks_path", type=str,
+                       help="Path to the CSV file containing chunks data")
     
     args = parser.parse_args()
-    args.is_test = True
+    
+    # args.chunks_path = "src/dataset/chunks/final_chunks/chunked_all_pages_windowed.csv"
+    # args.chunks_path = "src/dataset/chunks/final_chunks/chunked_pages_category_A.csv"
+    args.chunks_path = "src/dataset/chunks/second_pass/chunked_pages_second_pass.csv"
     
     # Setup paths and load results
-    csv_path, results_path, txt_results_path = setup_paths_and_results(args.data_option, args.is_test)
+    results_path, txt_results_path = setup_paths_and_results(args.chunks_path)
     results_dir = os.path.dirname(results_path)
     
     # Initialize provider and load/create results
-    provider = DocumentProvider(csv_path, use_nltk_preprocessor=True)
+    provider = DocumentProvider(args.chunks_path, use_nltk_preprocessor=True)
     results = load_or_create_results(results_path, txt_results_path, provider)
     
     print(provider.stats)
-    queries, qrels = QueryQrelsBuilder(csv_path).build()
+    queries, qrels = QueryQrelsBuilder(args.chunks_path).build()
+    print(f">>> Results directory: {results_dir}\n")
 
     # Run all tests
-    run_all_tests(provider, queries, qrels, results, args.data_option, results_dir, txt_results_path)
+    run_all_tests(provider, queries, qrels, results, results_dir, txt_results_path)
 
     # Save results to JSON file
     with open(results_path, "w") as f:
