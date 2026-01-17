@@ -3,24 +3,25 @@ import subprocess
 import sys
 
 # Install required transformers version
+#TODO: old was 4.53.3, colqwen-3vl needs 4.57.0
 def ensure_transformers_version():
-    """Ensure transformers==4.53.3 is installed"""
+    """Ensure transformers==4.57.0 is installed"""
     try:
         import transformers
-        if transformers.__version__ != "4.53.3":
+        if transformers.__version__ != "4.57.0":
             print(f"Current transformers version: {transformers.__version__}")
-            print("Installing transformers==4.53.3...")
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==4.53.3"])
-            print("Successfully installed transformers==4.53.3")
+            print("Installing transformers==4.57.0...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==4.57.0"])
+            print("Successfully installed transformers==4.57.0")
             # Need to restart to use new version
             print("Please restart the script to use the new transformers version.")
             sys.exit(0)
         else:
             print(f"Using transformers version: {transformers.__version__}")
     except ImportError:
-        print("Installing transformers==4.53.3...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==4.53.3"])
-        print("Successfully installed transformers==4.53.3")
+        print("Installing transformers==4.57.0...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==4.57.0"])
+        print("Successfully installed transformers==4.57.0")
 
 # Ensure correct transformers version before proceeding
 ensure_transformers_version()
@@ -103,7 +104,7 @@ class HFBaselinesGenerator:
             ]
  
             with torch.inference_mode(), torch.autocast("cuda"):
-                output = pipe(text=messages, temperature=0.1, max_new_tokens=512)
+                output = pipe(text=messages, temperature=1, max_new_tokens=256)
             
             # normalize whatever shape generated_text has
             gen = output[0].get("generated_text", output[0])
@@ -141,6 +142,9 @@ class HFBaselinesGenerator:
    
     def generate_baselines(self, models, limit=None, output_dir="src/generators/results/baselines"):
         print(f"Testing models: {models}")
+        
+        # Start total time tracking
+        total_start_time = time.time()
        
         data = self.load_data()
         if limit:
@@ -198,12 +202,15 @@ class HFBaselinesGenerator:
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(results_by_model[model], f, indent=2, ensure_ascii=False)
             print(f"Results for {model} saved: {output_file}")
-       
-        # Final cleanup and summary
+        
+        # Calculate and display summary statistics
+        total_time = time.time() - total_start_time
         all_results = [result for model_results in results_by_model.values() for result in model_results]
         successful = sum(1 for r in all_results if r['success'])
-        print(f"\nCompleted: {len(all_results)} total, {successful} successful")
+        print(f"\nTotal generation time: {total_time:.2f} seconds ({total_time/60:.2f} minutes)")
+        print(f"Completed: {len(all_results)} total, {successful} successful")
        
+        # Show per-model statistics
         for model, model_results in results_by_model.items():
             model_successful = sum(1 for r in model_results if r['success'])
             print(f"  {model}: {len(model_results)} total, {model_successful} successful")
@@ -219,22 +226,31 @@ def main():
     parser.add_argument('--data_file', default='data/annotations/label-studio-data-min_filtered.json')
     parser.add_argument('--output_dir', default='src/generators/results/baselines')
     parser.add_argument('--limit', type=int, help='Limit entries')
-    parser.add_argument('--is_test', action='store_true', help='Use test dataset and save to test results directory')
    
     args = parser.parse_args()
-   
-    args.is_test = True 
+
     if not args.models:
-        args.models = ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf'] #, don't work: 'Qwen/Qwen2.5-VL-3B-Instruct', 'Qwen/Qwen2.5-VL-7B-Instruct']
-        args.models = ['google/gemma-3-12b-it']
-       
+        # args.models = ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf'] #, don't work: 'Qwen/Qwen2.5-VL-3B-Instruct', 'Qwen/Qwen2.5-VL-7B-Instruct']
+        # args.models = ['Qwen/Qwen3-VL-4B-Instruct']
+        args.models = ['OpenGVLab/InternVL3_5-2B-HF', 'OpenGVLab/InternVL3_5-4B-HF', 'OpenGVLab/InternVL3_5-8B-HF', 'Qwen/Qwen3-VL-4B-Instruct', 'Qwen/Qwen3-VL-8B-Instruct']
+        #NOTE: OpenGVLab/InternVL3_5-14B-HF:can be used: takes 5hrs
+        args.models = ['OpenGVLab/InternVL3_5-14B-HF'] #TODO: try this after": Qwen/Qwen3-VL-30B-A3B-Instruct
+        # not possible but maybe possible on #TODO ADA6000
+        #    - OpenGVLab/InternVL3_5-38B-HF 
+        #    - Qwen/Qwen3-VL-30B-A3B-Instruct
     if not args.limit:
-        args.limit = 1
+        args.limit = None
     
-    # Update data file and output directory if is_test is set
-    if args.is_test:
-        args.data_file = 'data/annotations/label-studio-data-min_filtered_sampled.json'
-        args.output_dir = 'src/generators/results/test/baselines'
+    is_category_a = True # set to True to consider only Category A QAs from the first pass classification
+    is_category_b = False # set to True to consider only Category B QAs from the first pass classification after rewriting them and being classified as category A
+
+    if is_category_a:
+        args.data_file = 'data/annotations/final_annotations/filtered_annotations/by_category/first_pass_classified_qa_category_A.json'
+        args.output_dir = 'src/generators/results/category_a/baselines'
+
+    if is_category_b:
+        args.data_file = 'data/annotations/final_annotations/filtered_annotations/by_category/first_pass_classified_qa_category_B.json'
+        args.output_dir = 'src/generators/results/category_b/baselines'
    
     generator = HFBaselinesGenerator(args.models, args.data_file)
     generator.generate_baselines(args.models, args.limit, args.output_dir)

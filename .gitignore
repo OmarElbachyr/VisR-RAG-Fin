@@ -43,7 +43,10 @@ src/test/retrievers_test
 runner.sh
 src/retrievers/results/annotated_pages
 src/retrievers/results/all_pages
-src/generators/results
+src/generators/results/*
+!src/generators/results/category_a/
+!src/generators/results/category_a/baselines/
+!src/generators/results/category_a/baselines/**
 src/generators/eval
 src/retrievers/results
 
