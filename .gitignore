@@ -69,3 +69,5 @@ finetune/checkpoints
 src/dataset/chunks/backup
 src/dataset/backup
 src/dataset/chunkers/backup
+
+src/generators/rq_5/topk_pages_txt
