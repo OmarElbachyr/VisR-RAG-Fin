@@ -123,13 +123,14 @@ class ResultsEvaluator:
                 existing_results = existing_results[:limit]
 
             evaluated_results = []
-            for result in existing_results:
+            total_results = len(existing_results)
+            for idx, result in enumerate(existing_results, 1):
                 reference_answer = result.get('ground_truth')
                 predicted = result.get('predicted')
                 question = result.get('question')
                 
                 if result.get('success') and predicted and reference_answer:
-                    print(f"  Evaluating: {question[:30]}...")
+                    print(f"  [{idx}/{total_results}] Evaluating: {question[:30]}...")
                     judgment = judge.evaluate_answer(question, reference_answer, predicted)
                     evaluated_results.append({
                         **result,
@@ -155,10 +156,29 @@ class ResultsEvaluator:
                         'judgment_error': 'Generation failed or missing ground truth'
                     })
 
+            # Calculate summary statistics
+            total = len(evaluated_results)
+            generation_successful = sum(1 for r in evaluated_results if r['success'])
+            judgment_successful = sum(1 for r in evaluated_results if r['judgment_success'])
+            correct_answers = sum(1 for r in evaluated_results if r['is_correct'] is True)
+            accuracy = correct_answers / judgment_successful if judgment_successful > 0 else 0
+            
+            # Create output structure with summary statistics
+            output_data = {
+                'summary': {
+                    'total_entries': total,
+                    'generation_successful': generation_successful,
+                    'judgment_successful': judgment_successful,
+                    'correct_answers': correct_answers,
+                    'accuracy': round(accuracy, 3)
+                },
+                'results': evaluated_results
+            }
+            
             output_file = os.path.join(output_dir, f'{model_name}.json')
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(evaluated_results, f, indent=2, ensure_ascii=False)
+                json.dump(output_data, f, indent=2, ensure_ascii=False)
             print(f"  Saved: {output_file}")
 
             # Create a more meaningful key for evaluation summary
@@ -187,7 +207,7 @@ class ResultsEvaluator:
             print(f"  Generation successful: {generation_successful}")
             print(f"  Judgment successful: {judgment_successful}")
             print(f"  Correct answers: {correct_answers}")
-            print(f"  Accuracy: {accuracy:.3f}")
+            print(f"  Accuracy: {accuracy:4f}")
 
         return all_evaluations
 
@@ -208,24 +228,40 @@ def main():
     args = parser.parse_args()
 
     # set to True to evaluate baselines only
-    args.evaluate_baselines = True 
+    args.evaluate_baselines = False 
+
+    args.baseline_results_dir = "src/generators/results/category_a/baselines"
+    args.pipeline_results_dir = "src/generators/results/category_a/retrieval_pipeline"
 
     # Hard code OpenAI as judge
     args.use_openai_judge = True
-    args.openai_judge_model = 'gpt-5-mini-2025-08-07'
+    args.openai_judge_model = 'gpt-5.2-2025-12-11'
 
     if not args.models:
-        args.models = ['gemma3:4b-it-fp16', 'gemma3:12b-it-fp16', 'gemma3:27b-it-fp16', 
-                       'qwen2.5vl:3b-fp16', 'qwen2.5vl:7b-fp16',
-                       'OpenGVLab/InternVL3_5-2B-HF', 'OpenGVLab/InternVL3_5-4B-HF', 'OpenGVLab/InternVL3_5-8B-HF', 'OpenGVLab/InternVL3_5-14B-HF',
-                       'Qwen/Qwen3-VL-4B-Instruct', 'Qwen/Qwen3-VL-8B-Instruct']
-        
+        args.models = [
+                        # 'gemma3:4b-it-fp16', 'gemma3:12b-it-fp16', 'gemma3:27b-it-fp16', 
+                        # 'qwen2.5vl:3b-fp16', 'qwen2.5vl:7b-fp16',
+                        # 'OpenGVLab/InternVL3_5-2B-HF', 'OpenGVLab/InternVL3_5-4B-HF', 'OpenGVLab/InternVL3_5-8B-HF', 'OpenGVLab/InternVL3_5-14B-HF',
+                        # 'Qwen/Qwen3-VL-4B-Instruct', 'Qwen/Qwen3-VL-8B-Instruct',
+                        'gemini-3-flash-preview'
+                        ]
+
+    is_text_models = False  
+    is_hybrid_models = False
+
+    if is_text_models:
+        args.pipeline_results_dir = "src/generators/results/category_a/retrieval_pipeline_text" 
+    
+    if is_hybrid_models:
+        args.pipeline_results_dir = "src/generators/results/category_a/retrieval_pipeline_hybrid"       
+
     if not args.retrievers:
-        args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b', 'nomic-ai/colnomic-embed-multimodal-7b']
+        args.retrievers = ['nomic-ai/colnomic-embed-multimodal-7b']
     if not args.limit:
         args.limit = None
     if not args.top_k:
-        args.top_k = [1, 3]
+        # args.top_k = [1, 5, 3, 10]
+        args.top_k = [1]
   
     try:
         ollama.list()
@@ -266,18 +302,20 @@ def main():
             args.models
         )
     else:
-        # Standard evaluation: iterate over top_k values and retrievers
-        for top_k in args.top_k:
-            print(f"\n=== Evaluating for top_k: {top_k} ===")
+        # Hybrid case 
+        if is_hybrid_models:
+            args.output_dir = "src/generators/eval/retrieval_pipeline_hybrid"
+            print(f"\n=== Evaluating for top_10 Hybrid:===")
+            
             for retriever in args.retrievers:
                 print(f"\n=== Evaluating for retriever: {retriever} ===")
-                results_dir = os.path.join(args.pipeline_results_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
-                output_subdir = os.path.join(args.output_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
-                
+                results_dir = args.pipeline_results_dir
+                output_subdir = os.path.join(args.output_dir, "top_k_10", retriever.replace("/", "_"))
+
                 if not os.path.exists(results_dir):
-                    print(f"Results directory not found: {results_dir}")
-                    continue
-                    
+                        print(f"Results directory not found: {results_dir}")
+                        continue
+                
                 evaluator.evaluate_existing_answers(
                     judge,
                     results_dir,
@@ -285,6 +323,32 @@ def main():
                     args.limit,
                     args.models
                 )
+
+        # Text or image-only case
+        else:
+            args.output_dir = "src/generators/eval/retrieval_pipeline"
+            if is_text_models:
+                args.output_dir = "src/generators/eval/retrieval_pipeline_text"
+            
+            # Standard evaluation: iterate over top_k values and retrievers
+            for top_k in args.top_k:
+                print(f"\n=== Evaluating for top_k: {top_k} ===")
+                for retriever in args.retrievers:
+                    print(f"\n=== Evaluating for retriever: {retriever} ===")
+                    results_dir = os.path.join(args.pipeline_results_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
+                    output_subdir = os.path.join(args.output_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
+                    
+                    if not os.path.exists(results_dir):
+                        print(f"Results directory not found: {results_dir}")
+                        continue
+                        
+                    evaluator.evaluate_existing_answers(
+                        judge,
+                        results_dir,
+                        output_subdir,
+                        args.limit,
+                        args.models
+                    )
 
 if __name__ == "__main__":
     main()

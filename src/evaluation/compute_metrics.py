@@ -226,18 +226,13 @@ def save_metrics_json(metrics, output_file):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Compute metrics from judged results')
-    parser.add_argument('--results_dir', default='src/results/judged', 
-                       help='Directory containing judged results')
-    parser.add_argument('--output_file', default='src/results/generation_metrics.json',
-                       help='Output file for metrics JSON')
-    parser.add_argument('--no_save', action='store_true', help='Don\'t save metrics to file')
-    
-    args = parser.parse_args()
-    
+    results_dir = 'src/results/judged' # Directory containing judged results
+    output_file = 'src/results/generation_metrics.json' # Output file for metrics JSON
+    no_save = False # Don't save metrics to file
+
     # Load results
-    print(f"Loading results from: {args.results_dir}")
-    results = load_judged_results(args.results_dir)
+    print(f"Loading results from: {results_dir}")
+    results = load_judged_results(results_dir)
     
     if not results:
         print("No judged results found!")
@@ -255,8 +250,8 @@ def main():
     print_retriever_comparison(metrics)
     
     # Save metrics
-    if not args.no_save:
-        save_metrics_json(metrics, args.output_file)
+    if not no_save:
+        save_metrics_json(metrics, output_file)
 
 
 if __name__ == "__main__":
