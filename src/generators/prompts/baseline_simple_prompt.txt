@@ -1,0 +1,4 @@
+You are a financial analyst expert at analyzing financial documents.
+Answer the following question based on the PDF page image:
+Question: {question}
+
