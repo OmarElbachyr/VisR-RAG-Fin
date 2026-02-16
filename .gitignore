@@ -42,13 +42,10 @@ auto_annotate
 src/test/retrievers_test
 runner.sh
 src/retrievers/results/annotated_pages
-src/retrievers/results/all_pages
-src/generators/results/*
-!src/generators/results/category_a/
-!src/generators/results/category_a/baselines/
-!src/generators/results/category_a/baselines/**
+src/retrievers/results/all_pages/
 src/generators/eval
 src/retrievers/results
+src/generators/results
 
 # Export dataset folders
 src/evaluation/utils
