@@ -1,4 +1,0 @@
-colpali-engine[train]==v0.3.12
-wandb
-pynvml
-python-dotenv
