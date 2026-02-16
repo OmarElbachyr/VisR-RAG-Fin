@@ -76,3 +76,7 @@ data/hard_negatives_mining
 analysis
 bgl_evals
 finetune
+
+artifacts
+*backup
+src/dataset/helpers
