@@ -36,6 +36,7 @@ data/*
 !/data/pages 
 !/data/annotations
 !/data/hard_negatives_mining
+!/data/README.md
 retrieved_pages
 src/generators/baselines/results
 auto_annotate
