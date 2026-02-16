@@ -71,3 +71,8 @@ src/dataset/backup
 src/dataset/chunkers/backup
 
 src/generators/rq_5/topk_pages_txt
+
+data/hard_negatives_mining
+analysis
+bgl_evals
+finetune
