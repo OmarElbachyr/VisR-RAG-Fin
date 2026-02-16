@@ -3,8 +3,10 @@ import json
 import time
 import argparse
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from PIL import Image
+import io
 from dotenv import load_dotenv
 from generators.prompt_utils import load_prompt
  
@@ -19,12 +21,11 @@ class GeminiBaselinesGenerator:
         api_key = os.getenv('GOOGLE_API_KEY')
         if not api_key:
             raise ValueError("GOOGLE_API_KEY environment variable not set")
-        genai.configure(api_key=api_key)
+
+        self.client = genai.Client(api_key=api_key)
         
         # Initialize model clients
-        self.model_clients = {}
-        for model in models:
-            self.model_clients[model] = genai.GenerativeModel(model)
+        self.model_clients = {model: model for model in models}
         
     def load_data(self):
         with open(self.data_file, 'r', encoding='utf-8') as f:
@@ -41,17 +42,23 @@ class GeminiBaselinesGenerator:
         try:
             # Load and prepare the image
             image = Image.open(image_path)
+            buffer = io.BytesIO()
+            image.save(buffer, format="JPEG")
+            buffer.seek(0)
+            image_part = types.Part.from_bytes(
+                data=buffer.read(),
+                mime_type="image/jpeg"
+            )
             
             # Load prompt template and format it
             prompt_template = load_prompt("baseline_prompt.txt")
             prompt = prompt_template.format(question=question)
             
-            model_client = self.model_clients[model]
-            response = model_client.generate_content(
-                [prompt, image],
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=512,
-                    temperature=0.1
+            response = self.client.models.generate_content(
+                model=model,
+                contents=[prompt, image_part],
+                config=types.GenerateContentConfig(
+                    temperature=0.1,
                 )
             )
             
@@ -82,18 +89,19 @@ class GeminiBaselinesGenerator:
         results_by_model = {model: [] for model in models}
        
         # Process all models
-        for i, entry in enumerate(data, 1):
-            print(f"Entry {i}/{len(data)}")
-            image_path = self.get_image_path(entry['image_filename'])
-           
-            if not os.path.exists(image_path):
-                print(f"Image not found: {image_path}")
-                continue
- 
-            page_id = os.path.basename(image_path).replace('.png', '')
-            
-            for model in models:
-                print(f"  Model: {model}")
+        for model in models:
+            print(f"Processing model: {model}")
+
+            for i, entry in enumerate(data, 1):
+                print(f"Entry {i}/{len(data)}")
+                image_path = self.get_image_path(entry['image_filename'])
+               
+                if not os.path.exists(image_path):
+                    print(f"Image not found: {image_path}")
+                    continue
+     
+                page_id = os.path.basename(image_path).replace('.png', '')
+                
                 for qa in entry.get('qa_pairs', []):
                     print(f"    {qa['question'][:50]}...")
                    
@@ -143,21 +151,27 @@ def main():
     parser.add_argument('--data_file', default='data/annotations/label-studio-data-min_filtered.json')
     parser.add_argument('--output_dir', default='src/generators/results/baselines')
     parser.add_argument('--limit', type=int, help='Limit entries')
-    parser.add_argument('--is_test', action='store_true', help='Use test dataset and save to test results directory')
    
     args = parser.parse_args()
    
     args.is_test = True 
     if not args.models:
-        args.models = ['gemini-1.5-pro', 'gemini-1.5-flash']
+        # Add models you want to test here, or pass them via command line
+        args.models = ['gemini-3-pro-preview']
        
     if not args.limit:
-        args.limit = 2
+        args.limit = 1
+
+    is_category_a = True # set to True to consider only Category A QAs from the first pass classification
+    is_category_b = False # set to True to consider only Category B QAs from the first pass classification after rewriting them and being classified as category A
     
-    # Update data file and output directory if is_test is set
-    if args.is_test:
-        args.data_file = 'data/annotations/label-studio-data-min_filtered_sampled.json'
-        args.output_dir = 'src/generators/results/test/baselines'
+    if is_category_a:
+        args.data_file = 'data/annotations/final_annotations/filtered_annotations/by_category/first_pass_classified_qa_category_A.json'
+        args.output_dir = 'src/generators/results/category_a/baselines'
+
+    if is_category_b:
+        args.data_file = 'data/annotations/final_annotations/filtered_annotations/by_category/first_pass_classified_qa_category_B.json'
+        args.output_dir = 'src/generators/results/category_b/baselines'
    
     generator = GeminiBaselinesGenerator(args.models, args.data_file)
     generator.generate_baselines(args.models, args.limit, args.output_dir)

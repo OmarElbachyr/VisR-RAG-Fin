@@ -5,23 +5,22 @@ import sys
 # Install required transformers version
 #TODO: old was 4.53.3, colqwen-3vl needs 4.57.0
 def ensure_transformers_version():
-    """Ensure transformers==4.57.0 is installed"""
+    transformers_version = "4.57.0"
     try:
         import transformers
-        if transformers.__version__ != "4.57.0":
+        if transformers.__version__ != transformers_version:
             print(f"Current transformers version: {transformers.__version__}")
-            print("Installing transformers==4.57.0...")
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==4.57.0"])
-            print("Successfully installed transformers==4.57.0")
-            # Need to restart to use new version
+            print(f"Installing transformers=={transformers_version}...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", f"transformers=={transformers_version}"])
+            print(f"Successfully installed transformers=={transformers_version}")
             print("Please restart the script to use the new transformers version.")
             sys.exit(0)
         else:
             print(f"Using transformers version: {transformers.__version__}")
     except ImportError:
-        print("Installing transformers==4.57.0...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "transformers==4.57.0"])
-        print("Successfully installed transformers==4.57.0")
+        print(f"Installing transformers=={transformers_version}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", f"transformers=={transformers_version}"])
+        print(f"Successfully installed transformers=={transformers_version}")
 
 # Ensure correct transformers version before proceeding
 ensure_transformers_version()
@@ -45,6 +44,7 @@ class HFBaselinesGenerator:
         self.data_file = data_file
         self.models = models
         self.model_pipelines = {}
+        self.device = "cuda" 
         
     def _load_model_pipeline(self, model):
         """Load a single model pipeline to manage GPU memory better"""
@@ -103,8 +103,9 @@ class HFBaselinesGenerator:
                 }
             ]
  
-            with torch.inference_mode(), torch.autocast("cuda"):
-                output = pipe(text=messages, temperature=1, max_new_tokens=256)
+            device_type = self.device.split(':')[0] if ':' in self.device else self.device
+            with torch.inference_mode(), torch.autocast(device_type):
+                output = pipe(text=messages, temperature=0.1, max_new_tokens=512)
             
             # normalize whatever shape generated_text has
             gen = output[0].get("generated_text", output[0])
@@ -230,16 +231,19 @@ def main():
     args = parser.parse_args()
 
     if not args.models:
-        # args.models = ['OpenGVLab/InternVL3-8B-hf', 'OpenGVLab/InternVL3-2B-hf'] #, don't work: 'Qwen/Qwen2.5-VL-3B-Instruct', 'Qwen/Qwen2.5-VL-7B-Instruct']
-        # args.models = ['Qwen/Qwen3-VL-4B-Instruct']
-        args.models = ['OpenGVLab/InternVL3_5-2B-HF', 'OpenGVLab/InternVL3_5-4B-HF', 'OpenGVLab/InternVL3_5-8B-HF', 'Qwen/Qwen3-VL-4B-Instruct', 'Qwen/Qwen3-VL-8B-Instruct']
-        #NOTE: OpenGVLab/InternVL3_5-14B-HF:can be used: takes 5hrs
-        args.models = ['OpenGVLab/InternVL3_5-14B-HF'] #TODO: try this after": Qwen/Qwen3-VL-30B-A3B-Instruct
-        # not possible but maybe possible on #TODO ADA6000
-        #    - OpenGVLab/InternVL3_5-38B-HF 
-        #    - Qwen/Qwen3-VL-30B-A3B-Instruct
+        # Add models you want to test here, or pass them via command line
+        args.models = [
+                        # "OpenGVLab/InternVL3_5-2B-HF",
+                        # "Qwen/Qwen3-VL-4B-Instruct",
+                        "Qwen/Qwen3-VL-8B-Instruct",
+                        "Qwen/Qwen3-VL-32B-Instruct",
+        ]
+     
     if not args.limit:
         args.limit = None
+
+    # Define the device
+    device = "cuda:0"
     
     is_category_a = True # set to True to consider only Category A QAs from the first pass classification
     is_category_b = False # set to True to consider only Category B QAs from the first pass classification after rewriting them and being classified as category A
@@ -251,8 +255,9 @@ def main():
     if is_category_b:
         args.data_file = 'data/annotations/final_annotations/filtered_annotations/by_category/first_pass_classified_qa_category_B.json'
         args.output_dir = 'src/generators/results/category_b/baselines'
-   
+
     generator = HFBaselinesGenerator(args.models, args.data_file)
+    generator.device = device  # Pass the device to the generator
     generator.generate_baselines(args.models, args.limit, args.output_dir)
  
 if __name__ == "__main__":

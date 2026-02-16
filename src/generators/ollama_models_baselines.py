@@ -128,9 +128,9 @@ def main():
     args = parser.parse_args()
     
     args.is_test = True
-    # Set default values in code (can still be overridden by command line)
     if not args.models:
-        args.models = ['qwen2.5vl:3b-fp16', 'qwen2.5vl:7b-fp16'] # ['qwen2.5vl:3b-fp16', 'qwen2.5vl:7b-fp16', 'qwen2.5vl:32b-fp16']
+        # Add models you want to test here, or pass them via command line
+        args.models = ['qwen2.5vl:3b-fp16', 'qwen2.5vl:7b-fp16']
         
     if not args.limit:
         args.limit = None

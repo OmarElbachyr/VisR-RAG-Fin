@@ -3,8 +3,10 @@ import json
 import time
 import argparse
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from PIL import Image
+import io
 from dotenv import load_dotenv
 from generators.prompt_utils import load_prompt
  
@@ -12,22 +14,22 @@ load_dotenv()
 
 
 class GeminiTopKGenerator:
-    def __init__(self, data_file, annotations_file, models, top_k=1):
+    def __init__(self, data_file, annotations_file, models, top_k=1, filter_top_k_hits=False):
         self.data_file = data_file
         self.annotations_file = annotations_file
         self.top_k = top_k
         self.models = models
+        self.filter_top_k_hits = filter_top_k_hits
         
         # Configure Gemini API
         api_key = os.getenv('GOOGLE_API_KEY')
         if not api_key:
             raise ValueError("GOOGLE_API_KEY environment variable not set")
-        genai.configure(api_key=api_key)
+
+        self.client = genai.Client(api_key=api_key)
         
         # Initialize model clients
-        self.model_clients = {}
-        for model in models:
-            self.model_clients[model] = genai.GenerativeModel(model)
+        self.model_clients = {model: model for model in models}
         
     def load_data(self):
         with open(self.data_file, 'r', encoding='utf-8') as f:
@@ -40,17 +42,26 @@ class GeminiTopKGenerator:
         return data, annotations
     
     def get_image_path(self, filename):
-        return f"data/pages/{filename.split('/')[-1]}.png"
+        page_path = f"data/pages/{filename.split('/')[-1]}.png"
+        noise_path = f"data/hard_negative_pages_text/{filename.split('/')[-1]}.png"
+        return page_path if os.path.exists(page_path) else noise_path
     
     def query_model(self, model, question, images):
         start_time = time.time()
         
         try:
-            # Load all images
-            pil_images = []
+            image_parts = []
             for image_path in images:
                 image = Image.open(image_path)
-                pil_images.append(image)
+                buffer = io.BytesIO()
+                image.save(buffer, format="JPEG")
+                buffer.seek(0)
+                image_parts.append(
+                    types.Part.from_bytes(
+                        data=buffer.read(),
+                        mime_type="image/jpeg"
+                    )
+                )
             
             image_count = len(images)
             
@@ -58,15 +69,11 @@ class GeminiTopKGenerator:
             prompt_template = load_prompt("topk_prompt.txt")
             prompt = prompt_template.format(question=question, image_count=image_count)
             
-            # Build content list with prompt and all images
-            content = [prompt] + pil_images
-            
-            model_client = self.model_clients[model]
-            response = model_client.generate_content(
-                content,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=512,
-                    temperature=0.1
+            response = self.client.models.generate_content(
+                model=model,
+                contents=[prompt] + image_parts,
+                config=types.GenerateContentConfig(
+                    temperature=0.1,
                 )
             )
             
@@ -91,115 +98,93 @@ class GeminiTopKGenerator:
         
         data, annotations = self.load_data()
 
-        # Get sorted question keys and apply limit if specified
-        question_keys = sorted([k for k in data.keys() if k.startswith('q')], 
-                              key=lambda x: int(x[1:]))
+        question_keys = sorted([k for k in data.keys() if k.startswith('q')], key=lambda x: int(x[1:]))
         if limit:
             question_keys = question_keys[:limit]
             
         os.makedirs(output_dir, exist_ok=True)
-        results_by_model = {model: [] for model in models}
-        
-        for i, q_key in enumerate(question_keys, 1):
-            print(f"Entry {i}/{len(question_keys)} ({q_key})")
-            
-            # Get the top-k image filenames (keys) from the 'results' dict, sorted by score descending
-            entry = data[q_key]
-            results_dict = entry.get('results', {})
+
+        qa_lookup = {}
+        for annotation in annotations:
+            company = annotation.get('company')
+            file_category = annotation.get('file_category')
+            language = annotation.get('language')
+            image_filename = annotation.get('image_filename')
+            real_relevant_page = None
+            if image_filename:
+                real_relevant_page = image_filename.split('/')[-1].split('.')[0]
+
+            for qa_pair in annotation.get('qa_pairs', []):
+                q_id = qa_pair.get('question_id')
+                qa_lookup[q_id] = {
+                    'answer': qa_pair.get('answer'),
+                    'type': qa_pair.get('type'),
+                    'evidence': qa_pair.get('evidence'),
+                    'company': company,
+                    'file_category': file_category,
+                    'language': language,
+                    'real_relevant_page': real_relevant_page
+                }
+
+        question_keys = [k for k in question_keys if k in qa_lookup]
+
+        filtered_keys = []
+        for q_key in question_keys:
+            results_dict = data[q_key].get('results', {})
             top_k_images = list(results_dict.keys())[:self.top_k]
-            images = [self.get_image_path(img) for img in top_k_images]
+            if not self.filter_top_k_hits or qa_lookup[q_key]['real_relevant_page'] in top_k_images:
+                filtered_keys.append(q_key)
 
-            # Check if all images exist
-            existing_images = []
-            for image_path in images:
-                if os.path.exists(image_path):
-                    existing_images.append(image_path)
-                else:
-                    print(f"Image not found: {image_path}")
+        print(f"Processing {len(filtered_keys)} queries after filtering")
 
-            if len(existing_images) != self.top_k:
-                print(f"Not enough images for top-k (got {len(existing_images)}, need {self.top_k}), skipping entry")
-                continue
+        results_by_model = {model: [] for model in models}
+        for model in models:
+            print(f"Processing model: {model}")
+            for i, q_key in enumerate(filtered_keys, 1):
+                print(f"Entry {i}/{len(filtered_keys)} ({q_key})")
+                entry = data[q_key]
+                results_dict = entry.get('results', {})
+                top_k_images = list(results_dict.keys())[:self.top_k]
+                images = [self.get_image_path(img) for img in top_k_images]
+                if len(images) != self.top_k:
+                    continue
 
-            # Find the ground truth answer and metadata in annotations
-            ground_truth_answer = None
-            ground_truth_type = None
-            ground_truth_evidence = None
-            company = None
-            file_category = None
-            language = None
-            
-            for annotation in annotations:
-                for qa_pair in annotation.get('qa_pairs', []):
-                    if qa_pair.get('question_id') == q_key:
-                        ground_truth_answer = qa_pair.get('answer')
-                        ground_truth_type = qa_pair.get('type')
-                        ground_truth_evidence = qa_pair.get('evidence')
-                        company = annotation.get('company')
-                        file_category = annotation.get('file_category')
-                        language = annotation.get('language')
-                        break
-                
-                # Fallback: if qa_pairs is empty or missing, try to get from direct fields
-                if ground_truth_answer is None:
-                    answer_key = f"a{q_key[1:]}"  # Convert q1 -> a1, q2 -> a2, etc.
-                    type_key = f"type{q_key[1:]}"  # Convert q1 -> type1, q2 -> type2, etc.
-                    evidence_key = f"evidence{q_key[1:]}"  # Convert q1 -> evidence1, q2 -> evidence2, etc.
-                    
-                    if answer_key in annotation:
-                        ground_truth_answer = annotation.get(answer_key)
-                        ground_truth_type = annotation.get(type_key)
-                        ground_truth_evidence = annotation.get(evidence_key)
-                        company = annotation.get('company')
-                        file_category = annotation.get('file_category')
-                        language = annotation.get('language')
-                        break
-                
-                if ground_truth_answer is not None:
-                    break
-            
-            for model in models:
-                print(f"  Model: {model}")
+                qa_data = qa_lookup.get(q_key, {})
                 question = entry.get('query', '')
-                print(f"    {question[:50]}...")
-
-                result = self.query_model(model, question, existing_images)
+                result = self.query_model(model, question, images)
 
                 results_by_model[model].append({
                     'model': model,
                     'q_id': q_key,
                     'question': question,
                     'relevant_pages': top_k_images,
-                    'ground_truth': ground_truth_answer,
-                    'evidence': ground_truth_evidence,
-                    'type': ground_truth_type,
+                    'real_relevant_page': qa_data.get('real_relevant_page'),
+                    'ground_truth': qa_data.get('answer'),
+                    'evidence': qa_data.get('evidence'),
+                    'type': qa_data.get('type'),
                     'predicted': result['response'],
                     'success': result['success'],
                     'time': result['time'],
                     'error': result.get('error'),
-                    'company': company,
-                    'file_category': file_category,
-                    'language': language
+                    'company': qa_data.get('company'),
+                    'file_category': qa_data.get('file_category'),
+                    'language': qa_data.get('language')
                 })
-                
+
                 # Add small delay to respect rate limits
                 time.sleep(0.1)
-        
-        # Save results - separate file for each model
-        for model, model_results in results_by_model.items():
+
             model_safe = model.replace(":", "-").replace(".", "-").replace("/", "-").replace("_", "-")
             output_file = f"{output_dir}/gemini_top-k_{model_safe}.json"
             
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(model_results, f, indent=2, ensure_ascii=False)
+                json.dump(results_by_model[model], f, indent=2, ensure_ascii=False)
             print(f"Results for {model} saved: {output_file}")
-        
-        # Calculate and display summary statistics
-        all_results = [result for model_results in results_by_model.values() for result in model_results]
+
+        all_results = [r for model_results in results_by_model.values() for r in model_results]
         successful = sum(1 for r in all_results if r['success'])
         print(f"\nCompleted: {len(all_results)} total, {successful} successful")
         
-        # Show per-model statistics
         for model, model_results in results_by_model.items():
             model_successful = sum(1 for r in model_results if r['success'])
             print(f"  {model}: {len(model_results)} total, {model_successful} successful")
@@ -209,46 +194,51 @@ class GeminiTopKGenerator:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--models', nargs='+', help='Models to test')
-    parser.add_argument('--retrievers', nargs='+', help='Retrievers to test')
-    parser.add_argument('--annotations_file', default='data/annotations/label-studio-data-min_filtered.json')
-    parser.add_argument('--top_k', nargs='+', type=int, help='List of top-k values to provide to each model (e.g. --top_k 1 3 5)')
-    parser.add_argument('--output_dir', default='src/generators/results/retrieval_pipeline', help='Directory containing end-to-end retrieval + generation pipeline results')
-    parser.add_argument('--limit', type=int, help='Limit entries')
-    parser.add_argument('--is_test', action='store_true', help='Use test dataset and save to test results directory')
+    parser.add_argument('--models', nargs='+')
+    parser.add_argument('--retrievers', nargs='+')
+    parser.add_argument('--annotations_file')
+    parser.add_argument('--top_k', nargs='+', type=int)
+    parser.add_argument('--output_dir')
+    parser.add_argument('--limit', type=int)
+    parser.add_argument('--filter_top_k_hits', action='store_true')
 
     args = parser.parse_args()
-    
-    args.is_test = True 
-    if not args.models:
-        args.models = ['gemini-1.5-pro', 'gemini-1.5-flash']
-    if not args.retrievers:
-        args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b','nomic-ai/colnomic-embed-multimodal-7b']
 
-    data_option = 'annotated_pages_test' if args.is_test else 'annotated_pages'
+    if not args.models:
+        # Add models you want to test here, or pass them via command line
+        args.models = ['gemini-3-flash-preview']
+
+    if not args.retrievers:
+        # Add retrievers you want to test here, or pass them via command line
+        args.retrievers = ['nomic-ai/colnomic-embed-multimodal-7b']
 
     if not args.limit:
-        args.limit = 1
+        args.limit = None 
 
     if not args.top_k:
-        args.top_k = [1, 3]
+        args.top_k = [10, 5, 3, 1]
 
-    # Update annotations file and output directory if is_test is set
-    if args.is_test:
-        args.annotations_file = 'data/annotations/label-studio-data-min_filtered_sampled.json'
-        args.output_dir = 'src/generators/results/test/retrieval_pipeline'
+    args.filter_top_k_hits = True
+
+    args.annotations_file = 'data/annotations/final_annotations/filtered_annotations/by_category/first_pass_classified_qa_category_A.json'
+    args.output_dir = 'src/generators/results/category_a/retrieval_pipeline'
+
+    generator = GeminiTopKGenerator(
+        None,
+        args.annotations_file,
+        models=args.models,
+        top_k=1,
+        filter_top_k_hits=args.filter_top_k_hits
+    )
+
+    base_folder = "src/retrievers/results/chunked_pages_second_pass_rq1/0.5/retrieved_pages"
 
     for top_k in args.top_k:
-        print(f"\n=== Running for top_k: {top_k} ===")
-        
+        generator.top_k = top_k
         for retriever in args.retrievers:
-            print(f"\n=== Running for retriever: {retriever} ===")
-            data_file = f'src/retrievers/results/{data_option}/retrieved_pages/{retriever.replace("/", "_")}_sorted_run.json'
-            
-            # Create the generator for this specific configuration
-            generator = GeminiTopKGenerator(data_file, args.annotations_file, models=args.models, top_k=top_k)
-            
-            retriever_subdir = os.path.join(args.output_dir, f'top_k_{top_k}', retriever.replace("/", "_"))
+            data_file = f"{base_folder}/{retriever.replace('/', '_')}_sorted_run.json"
+            generator.data_file = data_file
+            retriever_subdir = os.path.join(args.output_dir, f"top_k_{top_k}", retriever.replace("/", "_"))
             os.makedirs(retriever_subdir, exist_ok=True)
             generator.generate_answers(args.models, args.limit, retriever_subdir)
 

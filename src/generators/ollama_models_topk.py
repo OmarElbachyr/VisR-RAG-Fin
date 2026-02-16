@@ -185,11 +185,11 @@ def main():
 
     args.is_test = True 
     if not args.models:
-        # args.models = ['qwen2.5vl:3b', 'gemma3:4b-it',
-        #                'qwen2.5vl:7b', 'gemma3:12b-it']
+        # Add models you want to test here, or pass them via command line
         args.models =  ['qwen2.5vl:3b-fp16']
 
     if not args.retrievers:
+        # Add retrievers you want to test here, or pass them via command line
         args.retrievers = ['nomic-ai/colnomic-embed-multimodal-3b','nomic-ai/colnomic-embed-multimodal-7b']
 
     data_option = 'annotated_pages' # 'all_pages'
