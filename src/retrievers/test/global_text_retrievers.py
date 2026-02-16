@@ -123,19 +123,15 @@ def load_or_create_results(results_path, txt_results_path, provider):
 def run_all_tests(provider, queries, qrels, results, results_dir, txt_results_path):
     """Run tests for all retriever models."""
     hard_negatives_chunks_path = "src/dataset/chunks/noise_pages_chunks/hard_negative_chunks.csv"  # Set to None to disable
+    # hard_negatives_chunks_path = "src/dataset/chunks/noise_pages_chunks/random_hard_negative_chunks.csv"  # Random hard negatives (RQ3)
     batch_size = 32
     
+    # Add more models here as needed 
     test_retriever(BM25Retriever, provider, queries, qrels, results["models"], results_dir, agg="max", 
                    hard_negatives_chunks_path=hard_negatives_chunks_path, txt_file_path=txt_results_path)
     
     test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], results_dir, agg="max",
                    model_name="BAAI/bge-m3", hard_negatives_chunks_path=hard_negatives_chunks_path, device_map='cuda', txt_file_path=txt_results_path, batch_size=batch_size)
-    
-    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], results_dir, agg="max", 
-                   model_name="intfloat/multilingual-e5-large", is_instruct=False, hard_negatives_chunks_path=hard_negatives_chunks_path, device_map='cuda', txt_file_path=txt_results_path, batch_size=batch_size)
-    
-    test_retriever(SentenceTransformerRetriever, provider, queries, qrels, results["models"], results_dir, agg="max", 
-                   model_name="intfloat/multilingual-e5-large-instruct", is_instruct=True, hard_negatives_chunks_path=hard_negatives_chunks_path, device_map='cuda', txt_file_path=txt_results_path, batch_size=batch_size)
     
     test_retriever(ColBERTRetriever, provider, queries, qrels, results["models"], results_dir, agg="max", 
                    model_name="colbert-ir/colbertv2.0", index_folder="indexes/pylate-index", index_name="index", override=True, hard_negatives_chunks_path=hard_negatives_chunks_path, device_map='cuda', batch_size=batch_size, txt_file_path=txt_results_path)
@@ -151,8 +147,6 @@ def main():
     
     args = parser.parse_args()
     
-    # args.chunks_path = "src/dataset/chunks/final_chunks/chunked_all_pages_windowed.csv"
-    # args.chunks_path = "src/dataset/chunks/final_chunks/chunked_pages_category_A.csv"
     args.chunks_path = "src/dataset/chunks/second_pass/chunked_pages_second_pass.csv"
     
     # Setup paths and load results

@@ -47,7 +47,8 @@ class SentenceTransformerRetriever(BaseRetriever):
             hard_negatives_chunks_path = Path(hard_negatives_chunks_path)
             if hard_negatives_chunks_path.exists():
                 hn_provider = DocumentProvider(str(hard_negatives_chunks_path), use_nltk_preprocessor=True)
-                hn_ids, hn_embeds = hn_provider.get("dense", encode_fn=self._encode)
+                hn_ids, hn_texts = hn_provider.get("text")
+                hn_embeds = self._encode(hn_texts)
                 existing_ids = set(self.doc_ids)
                 
                 # Add hard negative chunks that aren't already in positive set

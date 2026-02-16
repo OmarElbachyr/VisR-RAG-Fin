@@ -123,33 +123,27 @@ def run_all_tests(provider, queries, qrels, results, results_dir, txt_results_pa
     """Run tests for all retriever models."""
     image_dir = "data/pages"
     hard_negatives_dir = "data/hard_negative_pages_text"  # Set to None to disable
+    # hard_negatives_dir = "data/hard_negative_pages_random"  # For random hard negatives (RQ3)
 
     batch_size = 1
     print(f"\n>>> Using resize_ratio: {resize_ratio}")
     
-    # test_retriever(
-    #     ClipRetriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="openai/clip-vit-base-patch32", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=1
-    # )
-    # test_retriever(
-    #     SigLIPRetriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="google/siglip-base-patch16-224", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=1
-    # )
-    # test_retriever(
-    #     BiQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="nomic-ai/nomic-embed-multimodal-3b", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
-    # )
-    # test_retriever(
-    #     BiQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
-    #     model_name="nomic-ai/nomic-embed-multimodal-7b", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
-    # )
+    # Add more models here as needed 
     test_retriever(
-        GmeQwen2VL7BRetriever, provider, queries, qrels, results["models"], results_dir,
-        model_name="Alibaba-NLP/gme-Qwen2-VL-2B-Instruct", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
+        ClipRetriever, provider, queries, qrels, results["models"], results_dir,
+        model_name="openai/clip-vit-base-patch32", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=1
+    )
+    test_retriever(
+        SigLIPRetriever, provider, queries, qrels, results["models"], results_dir,
+        model_name="google/siglip-base-patch16-224", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=1
+    )
+    test_retriever(
+        BiQwen2_5Retriever, provider, queries, qrels, results["models"], results_dir,
+        model_name="nomic-ai/nomic-embed-multimodal-3b", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
     )
     test_retriever(
         GmeQwen2VL7BRetriever, provider, queries, qrels, results["models"], results_dir,
-        model_name="Alibaba-NLP/gme-Qwen2-VL-7B-Instruct", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
+        model_name="Alibaba-NLP/gme-Qwen2-VL-2B-Instruct", image_dir=image_dir, hard_negatives_dir=hard_negatives_dir, txt_file_path=txt_results_path, batch_size=batch_size, device_map="cuda", resize_ratio=resize_ratio
     )
 
 def main():
@@ -163,8 +157,6 @@ def main():
 
     args.resize_ratio = 0.5
     
-    # args.chunks_path = "src/dataset/chunks/final_chunks/chunked_all_pages_windowed.csv"
-    # args.chunks_path = "src/dataset/chunks/final_chunks/chunked_pages_category_A.csv"
     args.chunks_path = "src/dataset/chunks/second_pass/chunked_pages_second_pass.csv"
     
     print(f"\n>>> Resize ratio: {args.resize_ratio}")
